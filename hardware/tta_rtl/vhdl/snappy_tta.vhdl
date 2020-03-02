@@ -280,7 +280,7 @@ architecture structural of snappy_tta is
   signal rf_RF_glock_wire : std_logic;
   signal ground_signal : std_logic_vector(0 downto 0);
 
-  component snappy_tta_ifetch
+  component snappy_tta_ifetch is
     generic (
       debug_logic_g : boolean;
       bypass_pc_register : boolean);
@@ -307,7 +307,7 @@ architecture structural of snappy_tta is
       db_pc : out std_logic_vector(IMEMADDRWIDTH-1 downto 0));
   end component;
 
-  component snappy_tta_decompressor
+  component snappy_tta_decompressor is
     port (
       fetch_en : out std_logic;
       lock : in std_logic;
@@ -319,7 +319,7 @@ architecture structural of snappy_tta is
       lock_r : in std_logic);
   end component;
 
-  component snappy_tta_decoder
+  component snappy_tta_decoder is
     port (
       instructionword : in std_logic_vector(INSTRUCTIONWIDTH-1 downto 0);
       pc_load : out std_logic;
@@ -397,7 +397,7 @@ architecture structural of snappy_tta is
       db_tta_nreset : in std_logic);
   end component;
 
-  component fu_alu2
+  component fu_alu2 is
     port (
       clk : in std_logic;
       rstx : in std_logic;
@@ -411,7 +411,7 @@ architecture structural of snappy_tta is
       data_P3_out : out std_logic_vector(32-1 downto 0));
   end component;
 
-  component fu_alu_1
+  component fu_alu_1 is
     port (
       clk : in std_logic;
       rstx : in std_logic;
@@ -425,7 +425,7 @@ architecture structural of snappy_tta is
       load_in2_in : in std_logic);
   end component;
 
-  component fu_alu_1_1
+  component fu_alu_1_1 is
     port (
       clk : in std_logic;
       rstx : in std_logic;
@@ -439,7 +439,7 @@ architecture structural of snappy_tta is
       load_in2_in : in std_logic);
   end component;
 
-  component fu_streamout
+  component fu_streamout is
     port (
       t1_data_in : in std_logic_vector(8-1 downto 0);
       t1_load_in : in std_logic;
@@ -452,7 +452,7 @@ architecture structural of snappy_tta is
       glockreq : out std_logic);
   end component;
 
-  component fu_streamin
+  component fu_streamin is
     port (
       t1_data_in : in std_logic_vector(32-1 downto 0);
       t1_load_in : in std_logic;
@@ -466,7 +466,7 @@ architecture structural of snappy_tta is
       glockreq : out std_logic);
   end component;
 
-  component fu_stream_read
+  component fu_stream_read is
     port (
       t1_data_in : in std_logic_vector(32-1 downto 0);
       t1_load_in : in std_logic;
@@ -480,7 +480,7 @@ architecture structural of snappy_tta is
       glock : in std_logic);
   end component;
 
-  component fu_lsu_32b_slim
+  component fu_lsu_32b_slim is
     generic (
       addrw_g : integer;
       register_bypass_g : integer;
@@ -507,7 +507,7 @@ architecture structural of snappy_tta is
       glockreq_out : out std_logic);
   end component;
 
-  component rf_1wr_2rd_always_1
+  component rf_1wr_2rd_always_1 is
     generic (
       dataw : integer;
       rf_size : integer);
@@ -526,7 +526,7 @@ architecture structural of snappy_tta is
       glock : in std_logic);
   end component;
 
-  component rf_1wr_1rd_always_1_guarded_0
+  component rf_1wr_1rd_always_1_guarded_0 is
     generic (
       dataw : integer;
       rf_size : integer);
@@ -543,7 +543,7 @@ architecture structural of snappy_tta is
       glock : in std_logic);
   end component;
 
-  component rf_1wr_1rd_always_1
+  component rf_1wr_1rd_always_1 is
     generic (
       dataw : integer;
       rf_size : integer);
@@ -559,7 +559,7 @@ architecture structural of snappy_tta is
       glock : in std_logic);
   end component;
 
-  component snappy_tta_interconn
+  component snappy_tta_interconn is
     port (
       clk : in std_logic;
       rstx : in std_logic;

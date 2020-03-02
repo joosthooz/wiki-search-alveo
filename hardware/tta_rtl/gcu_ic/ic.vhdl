@@ -100,7 +100,7 @@ architecture comb_andor of snappy_tta_interconn is
   signal databus_B3_1_1 : std_logic_vector(31 downto 0);
   signal databus_B3_1_2 : std_logic_vector(31 downto 0);
 
-  component snappy_tta_input_mux_2
+  component snappy_tta_input_mux_2 is
     generic (
       BUSW_0 : integer := 32;
       BUSW_1 : integer := 32;
@@ -112,7 +112,7 @@ architecture comb_andor of snappy_tta_interconn is
       databus_cntrl : in std_logic_vector(0 downto 0));
   end component;
 
-  component snappy_tta_input_mux_3
+  component snappy_tta_input_mux_3 is
     generic (
       BUSW_0 : integer := 32;
       BUSW_1 : integer := 32;
@@ -126,7 +126,7 @@ architecture comb_andor of snappy_tta_interconn is
       databus_cntrl : in std_logic_vector(1 downto 0));
   end component;
 
-  component snappy_tta_input_mux_4
+  component snappy_tta_input_mux_4 is
     generic (
       BUSW_0 : integer := 32;
       BUSW_1 : integer := 32;
@@ -142,7 +142,7 @@ architecture comb_andor of snappy_tta_interconn is
       databus_cntrl : in std_logic_vector(1 downto 0));
   end component;
 
-  component snappy_tta_input_mux_5
+  component snappy_tta_input_mux_5 is
     generic (
       BUSW_0 : integer := 32;
       BUSW_1 : integer := 32;
@@ -160,7 +160,7 @@ architecture comb_andor of snappy_tta_interconn is
       databus_cntrl : in std_logic_vector(2 downto 0));
   end component;
 
-  component snappy_tta_input_mux_6
+  component snappy_tta_input_mux_6 is
     generic (
       BUSW_0 : integer := 32;
       BUSW_1 : integer := 32;
@@ -180,7 +180,7 @@ architecture comb_andor of snappy_tta_interconn is
       databus_cntrl : in std_logic_vector(2 downto 0));
   end component;
 
-  component snappy_tta_input_mux_7
+  component snappy_tta_input_mux_7 is
     generic (
       BUSW_0 : integer := 32;
       BUSW_1 : integer := 32;
@@ -202,7 +202,7 @@ architecture comb_andor of snappy_tta_interconn is
       databus_cntrl : in std_logic_vector(2 downto 0));
   end component;
 
-  component snappy_tta_input_mux_9
+  component snappy_tta_input_mux_9 is
     generic (
       BUSW_0 : integer := 32;
       BUSW_1 : integer := 32;
