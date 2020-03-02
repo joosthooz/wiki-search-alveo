@@ -23,7 +23,7 @@ use work.UtilInt_pkg.all;
 use work.UtilConv_pkg.all;
 use work.UtilMisc_pkg.all;
 use work.Array_pkg.all;
-use work.vhsnunzip_pkg.all;
+use work.tta_wrapper_resize_pkg.all;
 use work.vhdmmio_pkg.all;
 use work.WordMatch_MMIO_pkg.all;
 
@@ -657,26 +657,23 @@ begin
     pages_text_ready <= '1';
 
     -- Decompress the articles.
-    vhsnunzip_inst: vhsnunzip_unbuffered
-      generic map (
-        RAM_STYLE               => "URAM"
-      )
+    tta_inst: tta_wrapper_resize
       port map (
         clk                     => dec_clk,
         reset                   => dec_reset,
 
-        co_valid                => pages_text_bytes_valid,
-        co_ready                => pages_text_bytes_ready,
-        co_data                 => pages_text_bytes_data,
-        co_cnt                  => pages_text_bytes_count(2 downto 0),
-        co_last                 => pages_text_bytes_last,
+        in_valid                => pages_text_bytes_valid,
+        in_ready                => pages_text_bytes_ready,
+        in_data                 => pages_text_bytes_data,
+        in_cnt                  => pages_text_bytes_count(2 downto 0),
+        in_last                 => pages_text_bytes_last,
 
-        de_valid                => pages_text_chars_valid,
-        de_ready                => pages_text_chars_ready,
-        de_dvalid               => pages_text_chars_dvalid,
-        de_data                 => pages_text_chars_data,
-        de_cnt                  => pages_text_chars_count,
-        de_last                 => pages_text_chars_last
+        out_valid                => pages_text_chars_valid,
+        out_ready                => pages_text_chars_ready,
+        out_dvalid               => pages_text_chars_dvalid,
+        out_data                 => pages_text_chars_data,
+        out_cnt                  => pages_text_chars_count,
+        out_last                 => pages_text_chars_last
       );
 
     -- Match decompressed article text against the search pattern.
