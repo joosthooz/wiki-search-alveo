@@ -7,15 +7,15 @@ entity tta_wrapper_resize is
     clk, reset  : in std_logic;
     in_valid    : in  std_logic;
     in_ready    : out std_logic;
-    in_data     : in  std_logic_vector(255 downto 0);
-    in_cnt      : in  std_logic_vector(4 downto 0);
+    in_data     : in  std_logic_vector(63 downto 0);
+    in_cnt      : in  std_logic_vector(2 downto 0);
     in_last     : in  std_logic;
 
     out_valid   : out std_logic;
     out_ready   : in  std_logic;
     out_dvalid  : out std_logic;
-    out_data    : out std_logic_vector(255 downto 0);
-    out_cnt     : out std_logic_vector(4 downto 0);
+    out_data    : out std_logic_vector(63 downto 0);
+    out_cnt     : out std_logic_vector(3 downto 0);
     out_last    : out std_logic
   );
 end entity tta_wrapper_resize;
@@ -31,8 +31,8 @@ begin
   down_gearbox : entity work.StreamGearbox
   generic map (
     ELEMENT_WIDTH => 8,
-    IN_COUNT_MAX => 32,
-    IN_COUNT_WIDTH => 5,
+    IN_COUNT_MAX => 8,
+    IN_COUNT_WIDTH => 3,
 
     OUT_COUNT_MAX  => 1,
     OUT_COUNT_WIDTH => 1
@@ -59,8 +59,8 @@ begin
     IN_COUNT_MAX => 1,
     IN_COUNT_WIDTH => 1,
 
-    OUT_COUNT_MAX  => 32,
-    OUT_COUNT_WIDTH => 5
+    OUT_COUNT_MAX  => 8,
+    OUT_COUNT_WIDTH => 4
   ) port map(
     clk => clk, reset => reset,
     

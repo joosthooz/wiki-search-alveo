@@ -19,5 +19,5 @@ component tta_wrapper_resize is
     out_cnt     : out std_logic_vector(3 downto 0);
     out_last    : out std_logic
   );
-end entity tta_wrapper_resize;
+end component tta_wrapper_resize;
 end package;
