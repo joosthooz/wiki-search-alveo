@@ -56,7 +56,7 @@ begin
           done_r <= '0';
 	  read_all_r <= '0';
 	else
-          if data_aaddr = "1111111111" and data_awren = '1' then
+          if data_aaddr = "1111111111" and data_awren = '1' and data_avalid = '1' then
             done_r <= '1';
 	  end if;
 
@@ -80,7 +80,9 @@ begin
 	    restart_r <= '0';
 	  end if;
 
-	  if last_transmitted_r = '0' then
+	  if restart_r = '1' then
+	      out_valid_r <= '0';
+	  elsif last_transmitted_r = '0' then
             if done_r = '1' and tta_out_valid = '0' then
               out_valid_r <= '1';
 	      out_dvalid <= '0';

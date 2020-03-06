@@ -41,7 +41,7 @@ architecture rtl of fu_stream_read is
   signal current_copy_id_r : std_logic_vector(o1_data_in'range);
   signal current_idx_r, current_start_idx_r, current_end_idx_r : unsigned(buffer_size_log2_c-1 downto 0);
 begin
-   buffer_read_idx <= unsigned(t1_data_r(buffer_read_idx'range));
+   buffer_read_idx <= buffer_write_idx - unsigned(t1_data_r(buffer_read_idx'range));
 
   shadow_regs : process(clk, rstx)
   begin
@@ -87,7 +87,7 @@ begin
           result_r <= buffer_r(to_integer(buffer_read_idx));
 	  current_start_idx_r <= buffer_read_idx;
 	  current_end_idx_r <= buffer_write_idx - 1;
-	  if buffer_read_idx = buffer_write_idx - 1 then
+	  if to_integer(unsigned(t1_data_r)) = 1 then
             current_idx_r <= buffer_read_idx;
           else
 	    current_idx_r <= buffer_read_idx + 1;
