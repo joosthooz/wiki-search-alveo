@@ -282,14 +282,14 @@ begin
   increment_unit:
   for i in 0 to DATA_WIDTH-1 generate
 
-    inc_muxcy_inst: muxcy
+    inc_muxcy_inst: unisim.vcomponents.muxcy
     port map (
       o  => inc_chain(i+1),
       ci => inc_chain(i),
       di => '0',
       s  => shift_res(i)
     );
-    inc_xorcy_inst: xorcy
+    inc_xorcy_inst: unisim.vcomponents.xorcy
     port map (
       o  => inc_data(i),
       ci => inc_chain(i),
@@ -325,7 +325,7 @@ begin
     -- zero detection for 4 bit -> 1 LUT + 1 MUXCY, propagate previous zero signal, when nibble is zero
     nibble_is_zero(i) <= '1' when (inc_res_s2(i*4+3 downto i*4) = "0000") else '0'; -- is zero?
 
-    zero_detector_muxcy: muxcy
+    zero_detector_muxcy: unisim.vcomponents.muxcy
     port map (
       o  => zero_chain(i+1),  -- chain output signal
       ci => zero_chain(i),    -- s=1: chain input signal
