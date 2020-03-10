@@ -83,7 +83,7 @@ end generic_sru;
 architecture generic_sru_xv6_rtl of generic_sru is
 
   -- muxcy xilinx primitive component (carry chain multiplexer) --
-  component muxcy
+  component muxcy is
     port (
       o  : out std_logic;
       ci : in  std_logic;
@@ -93,7 +93,7 @@ architecture generic_sru_xv6_rtl of generic_sru is
   end component;
 
   -- xorcy xilinx primitive component (carry chain 'adder') --
-  component xorcy
+  component xorcy is
     port (
       o  : out std_logic;
       ci : in  std_logic;
