@@ -11,9 +11,9 @@ package snappy_tta_globals is
   -- clock period
   constant PERIOD : time := 10 ns;
   -- number of busses.
-  constant BUSTRACE_WIDTH : positive := 288;
+  constant BUSTRACE_WIDTH : positive := 256;
   -- number of cores
   constant CORECOUNT : positive := 1;
   -- instruction width
-  constant INSTRUCTIONWIDTH : positive := 107;
+  constant INSTRUCTIONWIDTH : positive := 103;
 end snappy_tta_globals;

@@ -26,13 +26,6 @@ entity tta_wrapper is
 end entity tta_wrapper;
 
 architecture structural of tta_wrapper is
-    signal tta_out_data, tta_in_data : std_logic_vector(8-1 downto 0);
-    signal tta_out_valid, tta_in_valid : std_logic;
-    signal tta_out_ready, tta_in_ready : std_logic;
-    signal tta_read_data_valid : std_logic;
-
-    signal out_valid_r : std_logic;
-
     signal imem_en_x : std_logic;
     signal imem_addr : std_logic_vector(IMEMADDRWIDTH-1 downto 0);
     signal imem_data : std_logic_vector(IMEMWIDTHINMAUS*IMEMMAUWIDTH-1 downto 0);
@@ -45,93 +38,11 @@ architecture structural of tta_wrapper is
     signal data_adata, data_rdata : std_logic_vector(32-1 downto 0);
     signal data_rvalid, data_rready : std_logic;
     
-    signal done_r, last_transmitted_r, read_all_r : std_logic;
+    signal last_transmitted_r, read_all_r : std_logic;
 begin
     rstx <= not reset;
 
-    monitor: process(clk)
-    begin
-      if rising_edge(clk) then
-	if rstx = '0' or restart_r = '1' then
-          done_r <= '0';
-	  read_all_r <= '0';
-	else
-          if data_aaddr = "1111111111" and data_awren = '1' and data_avalid = '1' then
-            done_r <= '1';
-	  end if;
-
-	  if in_valid = '1' and in_last = '1' and tta_in_ready = '1' then
-            read_all_r <= '0';
-	  end if;
-        end if;
-      end if;
-    end process monitor;
-
-    streamout: process(clk)
-    begin
-      if rising_edge(clk) then
-	if rstx = '0' then
-	  out_data <= (others => '0');
-	  out_valid_r <= '0';
-          restart_r <= '0';
-	  last_transmitted_r <= '0';
-        else
-	  if done_r = '0' then
-	    restart_r <= '0';
-	  end if;
-
-	  if restart_r = '1' then
-	      out_valid_r <= '0';
-	  elsif last_transmitted_r = '0' then
-            if done_r = '1' and tta_out_valid = '0' then
-              out_valid_r <= '1';
-	      out_dvalid <= '0';
-              out_cnt <= "0";
-              out_last <= '1';
-
-	      last_transmitted_r <= '1';
-            else
-	      out_valid_r <= tta_out_valid;
-	      out_dvalid <= '1';
-	      out_cnt <= "1";
-	      out_last <= '0';
-              
-	      if out_valid_r = '1' and out_ready = '1' then
-	        out_valid_r <= '0';
-	      end if;
-	
-	      if tta_out_valid = '1' and tta_out_ready = '1' then
-                out_valid_r <= '1';
-		out_data <= tta_out_data;
-	      end if;
-	    end if;
-          elsif out_ready = '1' then
-	    restart_r <= '1';
-	    last_transmitted_r <= '0';
-	    out_valid_r <= '0';
-	  end if;
-	end if;
-      end if;
-    end process streamout;
-
-    out_valid <= out_valid_r;
-    tta_out_ready <= out_ready or not out_valid_r;
-    
-    streamin: process(read_all_r, tta_in_ready, in_valid, in_data)
-    begin
-	if read_all_r = '1' then
-	   tta_in_valid <= '1';
-	   tta_in_data <= (others => '0');
-	   in_ready <= '0';
-	else
-           tta_in_valid <= in_valid;
-	   tta_in_data <= in_data;
-           in_ready <= tta_in_ready;
-	end if;
-    end process streamin;
-
-    tta_read_data_valid <= tta_out_valid and tta_out_ready;
-    tta_nreset <= not restart_r;
+    tta_nreset <= '1';
     core : entity work.snappy_tta
     port map (
 	clk => clk,
@@ -144,16 +55,18 @@ begin
 
 	locked => open,
 
-	fu_Streamout_instance_data_out => tta_out_data,
-	fu_Streamout_instance_valid_out(0) => tta_out_valid,
-	fu_streamout_instance_ready_in(0) => tta_out_ready,
+	fu_Stream_fu_in_valid(0) => in_valid,
+	fu_Stream_fu_in_ready(0) => in_ready,
+        fu_Stream_fu_in_data     => in_data,
+        fu_Stream_fu_in_cnt      => in_cnt,
+        fu_Stream_fu_in_last(0)  => in_last,
 
-	fu_Streamin_instance_data_in => tta_in_data,
-	fu_Streamin_instance_valid_in(0) => tta_in_valid,
-	fu_Streamin_instance_ready_out(0) => tta_in_ready,
-
-	fu_Streamout_read_data_in => tta_out_data,
-	fu_Streamout_read_data_valid_in(0) => tta_read_data_valid,
+        fu_Stream_fu_out_valid(0)  => out_valid,
+        fu_Stream_fu_out_ready(0)  => out_ready,
+        fu_Stream_fu_out_dvalid(0) => out_dvalid,
+        fu_Stream_fu_out_data      => out_data,
+        fu_Stream_fu_out_cnt       => out_cnt,
+        fu_Stream_fu_out_last(0)   => out_last,
 
 	fu_LSU_avalid_out(0) => data_avalid,
 	fu_LSU_aready_in(0) => data_aready,
