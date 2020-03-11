@@ -265,11 +265,16 @@ begin
     end if;
   end process read_mux;
 
-  lock_request: process(t1_load_r, op_state_r, out_valid_r, out_ready)
+  lock_request: process(t1_load_r, t1_opcode_r, read_valid_r,
+	                op_state_r, out_valid_r, out_ready)
   begin
     glockreq <= '0';
     -- TODO: can read buffer while copy is is progress
     if t1_load_r = '1' and op_state_r /= Idle then
+      glockreq <= '1';
+    end if;
+
+    if t1_load_r = '1' and t1_opcode_r = opc_read_c and read_valid_r = '0' then
       glockreq <= '1';
     end if;
 
