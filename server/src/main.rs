@@ -351,6 +351,8 @@ fn get_status() -> Result<impl warp::Reply, warp::Rejection> {
         fpga_temp: health.fpga_temp,
         power_in: health.power_in,
         power_vccint: health.power_vccint,
+        power_cpu0: health.cpu0_power,
+        power_cpu1: health.cpu1_power
     });
     println!("<- status");
     retval

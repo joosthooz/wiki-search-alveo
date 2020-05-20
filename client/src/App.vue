@@ -534,7 +534,7 @@
               </v-row>
               <v-row align="center" no-gutters>
                 <v-col cols=3 no-gutters class="text--secondary overline" style="text-align: right">
-                  CPU0
+                  CPU1
                 </v-col>
                 <v-col cols=6 no-gutters style="padding-left: 10px; padding-right: 10px">
                   <v-progress-linear
