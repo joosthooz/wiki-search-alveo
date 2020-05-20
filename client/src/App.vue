@@ -516,6 +516,38 @@
                   {{(server_status.power_vccint).toFixed(1)}} W
                 </v-col>
               </v-row>
+              <v-row align="center" no-gutters>
+                <v-col cols=3 no-gutters class="text--secondary overline" style="text-align: right">
+                  CPU0
+                </v-col>
+                <v-col cols=6 no-gutters style="padding-left: 10px; padding-right: 10px">
+                  <v-progress-linear
+                    :value="server_status.power_cpu0 * 1.5"
+                    color="light-blue"
+                    height="7px"
+                    style="transition-duration: 0.5s"
+                  />
+                </v-col>
+                <v-col cols=3 no-gutters class="caption" style="text-align: left">
+                  {{(server_status.power_cpu0).toFixed(1)}} W
+                </v-col>
+              </v-row>
+              <v-row align="center" no-gutters>
+                <v-col cols=3 no-gutters class="text--secondary overline" style="text-align: right">
+                  CPU0
+                </v-col>
+                <v-col cols=6 no-gutters style="padding-left: 10px; padding-right: 10px">
+                  <v-progress-linear
+                    :value="server_status.power_cpu1 * 1.5"
+                    color="light-blue"
+                    height="7px"
+                    style="transition-duration: 0.5s"
+                  />
+                </v-col>
+                <v-col cols=3 no-gutters class="caption" style="text-align: left">
+                  {{(server_status.power_cpu1).toFixed(1)}} W
+                </v-col>
+              </v-row>
             </div>
           </v-col>
           <v-spacer></v-spacer>

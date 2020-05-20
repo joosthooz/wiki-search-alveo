@@ -77,6 +77,8 @@ struct ServerStatus {
     fpga_temp: f32,
     power_in: f32,
     power_vccint: f32,
+    power_cpu0: f32,
+    power_cpu1: f32,
 }
 
 impl warp::Reply for ServerStatus {

@@ -180,7 +180,15 @@ const WordMatchResults *word_match_run(
  */
 WordMatchHealthInfo word_match_health() {
     WordMatchHealthInfo result;
+    static float cpu0_last_power;
+    static float cpu1_last_power;
+    int i;
+	FILE *fff;
+	char basename[2][256];
+    float energy[2];
+
     try {
+        //read FPGA power
         unsigned int index = 0;
         if (state->hw_impl) {
             index = state->hw_impl->get_device_index();
@@ -190,6 +198,25 @@ WordMatchHealthInfo word_match_health() {
         result.fpga_temp = info.fpga_temp;
         result.power_in = info.power_in;
         result.power_vccint = info.power_vccint;
+
+        //read CPU power
+        for(j=0;j<2;j++) {
+            i=0;
+            sprintf(basename[j],"/sys/class/powercap/intel-rapl/intel-rapl:%d", j);
+			fff=fopen(basename[j],"r");
+			if (fff==NULL) {
+				fprintf(stderr,"\tError opening %s!\n",filenames[j][i]);
+			}
+			else {
+				fscanf(fff,"%lld",&energy[j]);
+				fclose(fff);
+			}
+		}
+
+        result.cpu0power = energy[0] - cpu0_last_power;
+        result.cpu1power = energy[1] - cpu1_last_power;
+        cpu0_last_power = energy[0];
+        cpu1_last_power = energy[1];
         return result;
     } catch (const std::exception& e) {
         if (state != nullptr) {

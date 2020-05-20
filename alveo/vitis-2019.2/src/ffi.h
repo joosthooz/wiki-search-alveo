@@ -132,6 +132,9 @@ typedef struct {
     // VccINT rail power.
     float power_vccint;
 
+    float cpu0_power;
+    float cpu1_power;
+
 } WordMatchHealthInfo;
 
 /**
