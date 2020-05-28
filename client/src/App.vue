@@ -493,7 +493,7 @@
                     :value="server_status.power_in * 1.5"
                     color="light-blue"
                     height="7px"
-                    style="transition-duration: 0.5s"
+                    style="transition-duration: 0.2s"
                   />
                 </v-col>
                 <v-col cols=3 no-gutters class="caption" style="text-align: left">
@@ -509,7 +509,7 @@
                     :value="server_status.power_vccint * 1.5"
                     color="light-blue"
                     height="7px"
-                    style="transition-duration: 0.5s"
+                    style="transition-duration: 0.2s"
                   />
                 </v-col>
                 <v-col cols=3 no-gutters class="caption" style="text-align: left">
@@ -522,10 +522,10 @@
                 </v-col>
                 <v-col cols=6 no-gutters style="padding-left: 10px; padding-right: 10px">
                   <v-progress-linear
-                    :value="server_status.power_cpu0 * 1.5"
+                    :value="server_status.power_cpu0"
                     color="light-blue"
                     height="7px"
-                    style="transition-duration: 0.5s"
+                    style="transition-duration: 0.2s"
                   />
                 </v-col>
                 <v-col cols=3 no-gutters class="caption" style="text-align: left">
@@ -538,10 +538,10 @@
                 </v-col>
                 <v-col cols=6 no-gutters style="padding-left: 10px; padding-right: 10px">
                   <v-progress-linear
-                    :value="server_status.power_cpu1 * 1.5"
+                    :value="server_status.power_cpu1"
                     color="light-blue"
                     height="7px"
-                    style="transition-duration: 0.5s"
+                    style="transition-duration: 0.2s"
                   />
                 </v-col>
                 <v-col cols=3 no-gutters class="caption" style="text-align: left">
