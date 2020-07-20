@@ -56,7 +56,7 @@ entity snappy_tta_ifetch is
     -- ifetch control signals
     pc_load    : in  std_logic;
     ra_load    : in  std_logic;
-    pc_opcode  : in  std_logic_vector(0 downto 0);
+    pc_opcode  : in  std_logic_vector(3 downto 0);
     --instruction memory interface
     imem_data  : in  std_logic_vector(IMEMWIDTHINMAUS*IMEMMAUWIDTH-1 downto 0);
     imem_addr  : out std_logic_vector(IMEMADDRWIDTH-1 downto 0);
@@ -76,8 +76,8 @@ entity snappy_tta_ifetch is
             db_pc       : out std_logic_vector(IMEMADDRWIDTH-1 downto 0);
             db_cyclecnt : out std_logic_vector(64-1 downto 0);
             db_lockcnt  : out std_logic_vector(64-1 downto 0);
-    
-    
+    cond_in    : in std_logic_vector(31 downto 0);
+    cond_load  : in std_logic;
 
     clk  : in std_logic;
     rstx : in std_logic);
@@ -132,6 +132,11 @@ architecture rtl_andor of snappy_tta_ifetch is
                          := (others => '0');
   
   
+  signal take_cond_branch        : std_logic;
+  signal cond_not_zero_reg  : std_logic;
+  signal cond_not_zero_wire : std_logic;
+  signal cond, cond_r : std_logic_vector(32-1 downto 0);
+  signal comp, comp_r : std_logic_vector(32-1 downto 0);
   
 
 begin
@@ -421,16 +426,103 @@ begin
 
   
 
+  take_cond_branch_proc : process(pc_opcode, cond_not_zero_wire, cond, comp)
+  begin
+    if (unsigned(pc_opcode) = IFE_BZ1) then
+      take_cond_branch <= not cond_not_zero_wire;
+    elsif (unsigned(pc_opcode) = IFE_BNZ1) then
+      take_cond_branch <= cond_not_zero_wire;
+    elsif (unsigned(pc_opcode) = IFE_BGE) then
+      take_cond_branch <= '0';
+      if signed(cond) >= signed(comp)    then
+        take_cond_branch <= '1';
+      end if;
+    elsif (unsigned(pc_opcode) = IFE_BGEU) then
+      take_cond_branch <= '0';
+      if unsigned(cond) >= unsigned(comp)    then
+        take_cond_branch <= '1';
+      end if;
+    elsif (unsigned(pc_opcode) = IFE_BLE) then
+      take_cond_branch <= '0';
+      if signed(cond) <= signed(comp)    then
+        take_cond_branch <= '1';
+      end if;
+    elsif (unsigned(pc_opcode) = IFE_BLEU) then
+      take_cond_branch <= '0';
+      if unsigned(cond) <= unsigned(comp)    then
+        take_cond_branch <= '1';
+      end if;
+    elsif (unsigned(pc_opcode) = IFE_BLT) then
+      take_cond_branch <= '0';
+      if signed(cond) < signed(comp)    then
+        take_cond_branch <= '1';
+      end if;
+    elsif (unsigned(pc_opcode) = IFE_BLTU) then
+      take_cond_branch <= '0';
+      if unsigned(cond) < unsigned(comp)    then
+        take_cond_branch <= '1';
+      end if;
+    elsif (unsigned(pc_opcode) = IFE_BGT) then
+      take_cond_branch <= '0';
+      if signed(cond) > signed(comp)    then
+        take_cond_branch <= '1';
+      end if;
+    elsif (unsigned(pc_opcode) = IFE_BGTU) then
+      take_cond_branch <= '0';
+      if unsigned(cond) > unsigned(comp)    then
+        take_cond_branch <= '1';
+      end if;
+    elsif (unsigned(pc_opcode) = IFE_BNE) then
+      take_cond_branch <= '0';
+      if cond /= comp    then
+        take_cond_branch <= '1';
+      end if;
+    elsif (unsigned(pc_opcode) = IFE_BEQ) then
+      take_cond_branch <= '0';
+      if cond = comp    then
+        take_cond_branch <= '1';
+      end if;
+    else 
+      take_cond_branch <= '0';
+    end if;
+  end process take_cond_branch_proc;
   
+  cond_comp_shadow_reg_proc : process(rstx, clk)
+  begin
+    if rstx = '0' then
+      cond_r <= (others => '0');
+      comp_r <= (others => '0');
+    elsif rising_edge(clk) then
+      cond_r <= cond_in;
+      comp_r <= comp_in;
+    end if;
+  end process cond_comp_shadow_reg_proc;
+  
+  cond <= cond_in when cond_load = '1' else cond_r;
+  comp <= comp_in when comp_load = '1' else comp_r;
+  
+  cond_reg_write_proc : process(rstx, clk)
+  begin  -- process cond_reg_write
+    if rstx = '0' then  -- asynchronous reset (active low)
+      cond_not_zero_reg <= '0';
+    elsif clk'event and clk = '1' then  -- rising clock edge
+      if cond_load = '1' then
+        cond_not_zero_reg <= cond_in(0);
+      end if;
+    end if;
+  end process cond_reg_write_proc;
+  cond_not_zero_wire <= cond_in(0) when cond_load = '1'    else cond_not_zero_reg;
 
   default_pc_generate: if not bypass_pc_register  generate
     pc_wire <= pc_reg when (lock = '0') else pc_prev_reg;
     -- increase program counter
     increased_pc <= std_logic_vector(unsigned(pc_wire) + IMEMWIDTHINMAUS);
 
-    sel_next_pc : process (pc_load, pc_in, increased_pc, pc_opcode)
+    sel_next_pc : process (pc_load, pc_in, increased_pc, pc_opcode, take_cond_branch)
     begin
-      if pc_load = '1' and (unsigned(pc_opcode) = IFE_CALL or unsigned(pc_opcode) = IFE_JUMP) then
+      if pc_load = '1' and ((unsigned(pc_opcode) = IFE_CALL or 
+          unsigned(pc_opcode) = IFE_JUMP)
+       or take_cond_branch = '1') then
         next_pc <= pc_in;
         
       else -- no branch
@@ -443,10 +535,12 @@ begin
     -- increase program counter
     increased_pc <= std_logic_vector(unsigned(pc_wire) + IMEMWIDTHINMAUS);
 
-    sel_next_pc : process (pc_in, pc_reg, increased_pc        ,
-     pc_load, pc_opcode)
+    sel_next_pc : process (pc_in, pc_reg, increased_pc        
+    , pc_load, pc_opcode, take_cond_branch)
     begin
-      if pc_load = '1' and (unsigned(pc_opcode) = IFE_CALL or unsigned(pc_opcode) = IFE_JUMP) then
+      if pc_load = '1' and ((unsigned(pc_opcode) = IFE_CALL or 
+          unsigned(pc_opcode) = IFE_JUMP)
+       or take_cond_branch = '1') then
         pc_wire <= pc_in;
         next_pc      <= increased_pc;
       
