@@ -17,8 +17,6 @@ entity snappy_tta_interconn is
     socket_lsu_i2_bus_cntrl : in std_logic_vector(0 downto 0);
     socket_RF_i1_data : out std_logic_vector(31 downto 0);
     socket_RF_i1_bus_cntrl : in std_logic_vector(1 downto 0);
-    socket_bool_i1_data : out std_logic_vector(0 downto 0);
-    socket_bool_i1_bus_cntrl : in std_logic_vector(1 downto 0);
     socket_gcu_i1_data : out std_logic_vector(IMEMADDRWIDTH-1 downto 0);
     socket_gcu_i1_bus_cntrl : in std_logic_vector(0 downto 0);
     socket_gcu_i2_data : out std_logic_vector(IMEMADDRWIDTH-1 downto 0);
@@ -39,15 +37,23 @@ entity snappy_tta_interconn is
     socket_ALU_i1_2_bus_cntrl : in std_logic_vector(2 downto 0);
     socket_Streamout_i1_1_1_data : out std_logic_vector(31 downto 0);
     socket_Streamout_i1_1_1_bus_cntrl : in std_logic_vector(0 downto 0);
-    GCU_LSU_mux_ctrl_in : in std_logic_vector(2 downto 0);
+    socket_gcu_o1_1_data : out std_logic_vector(31 downto 0);
+    socket_gcu_o1_1_bus_cntrl : in std_logic_vector(2 downto 0);
+    socket_gcu_o1_1_1_data : out std_logic_vector(31 downto 0);
+    socket_gcu_o1_1_1_bus_cntrl : in std_logic_vector(2 downto 0);
+    GCU_LSU_mux_ctrl_in : in std_logic_vector(3 downto 0);
     GCU_LSU_data_0_in : in std_logic_vector(31 downto 0);
-    GCU_LSU_data_1_in : in std_logic_vector(IMEMADDRWIDTH-1 downto 0);
-    GCU_LSU_data_2_in : in std_logic_vector(31 downto 0);
-    GCU_LSU_data_3_in : in std_logic_vector(7 downto 0);
+    GCU_LSU_data_1_in : in std_logic_vector(31 downto 0);
+    GCU_LSU_data_2_in : in std_logic_vector(IMEMADDRWIDTH-1 downto 0);
+    GCU_LSU_data_3_in : in std_logic_vector(31 downto 0);
     GCU_LSU_data_4_in : in std_logic_vector(31 downto 0);
-    GCU_LSU_data_5_in : in std_logic_vector(31 downto 0);
-    PARAM_mux_ctrl_in : in std_logic_vector(0 downto 0);
-    PARAM_data_0_in : in std_logic_vector(7 downto 0);
+    GCU_LSU_data_5_in : in std_logic_vector(7 downto 0);
+    GCU_LSU_data_6_in : in std_logic_vector(31 downto 0);
+    GCU_LSU_data_7_in : in std_logic_vector(31 downto 0);
+    PARAM_mux_ctrl_in : in std_logic_vector(1 downto 0);
+    PARAM_data_0_in : in std_logic_vector(31 downto 0);
+    PARAM_data_1_in : in std_logic_vector(31 downto 0);
+    PARAM_data_2_in : in std_logic_vector(7 downto 0);
     B1_mux_ctrl_in : in std_logic_vector(0 downto 0);
     B1_data_0_in : in std_logic_vector(31 downto 0);
     B2_mux_ctrl_in : in std_logic_vector(0 downto 0);
@@ -55,18 +61,19 @@ entity snappy_tta_interconn is
     B3_mux_ctrl_in : in std_logic_vector(0 downto 0);
     B3_data_0_in : in std_logic_vector(31 downto 0);
     B4_mux_ctrl_in : in std_logic_vector(2 downto 0);
-    B4_data_0_in : in std_logic_vector(0 downto 0);
-    B4_data_1_in : in std_logic_vector(IMEMADDRWIDTH-1 downto 0);
+    B4_data_0_in : in std_logic_vector(IMEMADDRWIDTH-1 downto 0);
+    B4_data_1_in : in std_logic_vector(31 downto 0);
     B4_data_2_in : in std_logic_vector(31 downto 0);
-    B4_data_3_in : in std_logic_vector(31 downto 0);
-    B4_data_4_in : in std_logic_vector(7 downto 0);
+    B4_data_3_in : in std_logic_vector(7 downto 0);
+    B4_data_4_in : in std_logic_vector(31 downto 0);
     B4_data_5_in : in std_logic_vector(31 downto 0);
-    B4_data_6_in : in std_logic_vector(31 downto 0);
     B3_1_1_mux_ctrl_in : in std_logic_vector(1 downto 0);
-    B3_1_1_data_0_in : in std_logic_vector(0 downto 0);
+    B3_1_1_data_0_in : in std_logic_vector(31 downto 0);
     B3_1_1_data_1_in : in std_logic_vector(31 downto 0);
     B3_1_1_data_2_in : in std_logic_vector(31 downto 0);
+    B3_1_2_mux_ctrl_in : in std_logic_vector(0 downto 0);
     B3_1_2_data_0_in : in std_logic_vector(31 downto 0);
+    B3_1_2_data_1_in : in std_logic_vector(31 downto 0);
     simm_GCU_LSU : in std_logic_vector(31 downto 0);
     simm_cntrl_GCU_LSU : in std_logic_vector(0 downto 0);
     simm_PARAM : in std_logic_vector(31 downto 0);
@@ -103,20 +110,6 @@ architecture comb_andor of snappy_tta_interconn is
       databus1 : in std_logic_vector(BUSW_1-1 downto 0);
       data : out std_logic_vector(DATAW-1 downto 0);
       databus_cntrl : in std_logic_vector(0 downto 0));
-  end component;
-
-  component snappy_tta_input_mux_3 is
-    generic (
-      BUSW_0 : integer := 32;
-      BUSW_1 : integer := 32;
-      BUSW_2 : integer := 32;
-      DATAW : integer := 32);
-    port (
-      databus0 : in std_logic_vector(BUSW_0-1 downto 0);
-      databus1 : in std_logic_vector(BUSW_1-1 downto 0);
-      databus2 : in std_logic_vector(BUSW_2-1 downto 0);
-      data : out std_logic_vector(DATAW-1 downto 0);
-      databus_cntrl : in std_logic_vector(1 downto 0));
   end component;
 
   component snappy_tta_input_mux_4 is
@@ -175,6 +168,56 @@ architecture comb_andor of snappy_tta_interconn is
       databus6 : in std_logic_vector(BUSW_6-1 downto 0);
       data : out std_logic_vector(DATAW-1 downto 0);
       databus_cntrl : in std_logic_vector(2 downto 0));
+  end component;
+
+  component snappy_tta_input_mux_8 is
+    generic (
+      BUSW_0 : integer := 32;
+      BUSW_1 : integer := 32;
+      BUSW_2 : integer := 32;
+      BUSW_3 : integer := 32;
+      BUSW_4 : integer := 32;
+      BUSW_5 : integer := 32;
+      BUSW_6 : integer := 32;
+      BUSW_7 : integer := 32;
+      DATAW : integer := 32);
+    port (
+      databus0 : in std_logic_vector(BUSW_0-1 downto 0);
+      databus1 : in std_logic_vector(BUSW_1-1 downto 0);
+      databus2 : in std_logic_vector(BUSW_2-1 downto 0);
+      databus3 : in std_logic_vector(BUSW_3-1 downto 0);
+      databus4 : in std_logic_vector(BUSW_4-1 downto 0);
+      databus5 : in std_logic_vector(BUSW_5-1 downto 0);
+      databus6 : in std_logic_vector(BUSW_6-1 downto 0);
+      databus7 : in std_logic_vector(BUSW_7-1 downto 0);
+      data : out std_logic_vector(DATAW-1 downto 0);
+      databus_cntrl : in std_logic_vector(2 downto 0));
+  end component;
+
+  component snappy_tta_input_mux_9 is
+    generic (
+      BUSW_0 : integer := 32;
+      BUSW_1 : integer := 32;
+      BUSW_2 : integer := 32;
+      BUSW_3 : integer := 32;
+      BUSW_4 : integer := 32;
+      BUSW_5 : integer := 32;
+      BUSW_6 : integer := 32;
+      BUSW_7 : integer := 32;
+      BUSW_8 : integer := 32;
+      DATAW : integer := 32);
+    port (
+      databus0 : in std_logic_vector(BUSW_0-1 downto 0);
+      databus1 : in std_logic_vector(BUSW_1-1 downto 0);
+      databus2 : in std_logic_vector(BUSW_2-1 downto 0);
+      databus3 : in std_logic_vector(BUSW_3-1 downto 0);
+      databus4 : in std_logic_vector(BUSW_4-1 downto 0);
+      databus5 : in std_logic_vector(BUSW_5-1 downto 0);
+      databus6 : in std_logic_vector(BUSW_6-1 downto 0);
+      databus7 : in std_logic_vector(BUSW_7-1 downto 0);
+      databus8 : in std_logic_vector(BUSW_8-1 downto 0);
+      data : out std_logic_vector(DATAW-1 downto 0);
+      databus_cntrl : in std_logic_vector(3 downto 0));
   end component;
 
 
@@ -311,16 +354,18 @@ begin -- comb_andor
       data => socket_RF_i1_data,
       databus_cntrl => socket_RF_i1_bus_cntrl);
 
-  Streamout_i1 : snappy_tta_input_mux_3
+  Streamout_i1 : snappy_tta_input_mux_4
     generic map (
       BUSW_0 => 32,
       BUSW_1 => 32,
       BUSW_2 => 32,
+      BUSW_3 => 32,
       DATAW => 32)
     port map (
       databus0 => databus_B3_1_2,
       databus1 => databus_B3,
       databus2 => databus_GCU_LSU,
+      databus3 => databus_B3_1_1,
       data => socket_Streamout_i1_data,
       databus_cntrl => socket_Streamout_i1_bus_cntrl);
 
@@ -334,21 +379,6 @@ begin -- comb_andor
       databus1 => databus_B2,
       data => socket_Streamout_i1_1_1_data,
       databus_cntrl => socket_Streamout_i1_1_1_bus_cntrl);
-
-  bool_i1 : snappy_tta_input_mux_4
-    generic map (
-      BUSW_0 => 32,
-      BUSW_1 => 32,
-      BUSW_2 => 32,
-      BUSW_3 => 32,
-      DATAW => 1)
-    port map (
-      databus0 => databus_B1,
-      databus1 => databus_B2,
-      databus2 => databus_B3,
-      databus3 => databus_B3_1_2,
-      data => socket_bool_i1_data,
-      databus_cntrl => socket_bool_i1_bus_cntrl);
 
   gcu_i1 : snappy_tta_input_mux_2
     generic map (
@@ -372,6 +402,52 @@ begin -- comb_andor
       data => socket_gcu_i2_data,
       databus_cntrl => socket_gcu_i2_bus_cntrl);
 
+  gcu_o1_1 : snappy_tta_input_mux_8
+    generic map (
+      BUSW_0 => 32,
+      BUSW_1 => 32,
+      BUSW_2 => 32,
+      BUSW_3 => 32,
+      BUSW_4 => 32,
+      BUSW_5 => 32,
+      BUSW_6 => 32,
+      BUSW_7 => 32,
+      DATAW => 32)
+    port map (
+      databus0 => databus_GCU_LSU,
+      databus1 => databus_B4,
+      databus2 => databus_PARAM,
+      databus3 => databus_B1,
+      databus4 => databus_B2,
+      databus5 => databus_B3,
+      databus6 => databus_B3_1_1,
+      databus7 => databus_B3_1_2,
+      data => socket_gcu_o1_1_data,
+      databus_cntrl => socket_gcu_o1_1_bus_cntrl);
+
+  gcu_o1_1_1 : snappy_tta_input_mux_8
+    generic map (
+      BUSW_0 => 32,
+      BUSW_1 => 32,
+      BUSW_2 => 32,
+      BUSW_3 => 32,
+      BUSW_4 => 32,
+      BUSW_5 => 32,
+      BUSW_6 => 32,
+      BUSW_7 => 32,
+      DATAW => 32)
+    port map (
+      databus0 => databus_GCU_LSU,
+      databus1 => databus_B4,
+      databus2 => databus_PARAM,
+      databus3 => databus_B1,
+      databus4 => databus_B2,
+      databus5 => databus_B3,
+      databus6 => databus_B3_1_1,
+      databus7 => databus_B3_1_2,
+      data => socket_gcu_o1_1_1_data,
+      databus_cntrl => socket_gcu_o1_1_1_bus_cntrl);
+
   lsu_i1 : snappy_tta_input_mux_2
     generic map (
       BUSW_0 => 32,
@@ -394,15 +470,17 @@ begin -- comb_andor
       data => socket_lsu_i2_data,
       databus_cntrl => socket_lsu_i2_bus_cntrl);
 
-  GCU_LSU_bus_mux_inst : snappy_tta_input_mux_7
+  GCU_LSU_bus_mux_inst : snappy_tta_input_mux_9
     generic map (
       BUSW_0 => 32,
-      BUSW_1 => IMEMADDRWIDTH,
-      BUSW_2 => 32,
-      BUSW_3 => 8,
+      BUSW_1 => 32,
+      BUSW_2 => IMEMADDRWIDTH,
+      BUSW_3 => 32,
       BUSW_4 => 32,
-      BUSW_5 => 32,
+      BUSW_5 => 8,
       BUSW_6 => 32,
+      BUSW_7 => 32,
+      BUSW_8 => 32,
       DATAW => 32)
     port map (
       databus0 => GCU_LSU_data_0_in,
@@ -411,18 +489,24 @@ begin -- comb_andor
       databus3 => GCU_LSU_data_3_in,
       databus4 => GCU_LSU_data_4_in,
       databus5 => GCU_LSU_data_5_in,
-      databus6 => simm_GCU_LSU,
+      databus6 => GCU_LSU_data_6_in,
+      databus7 => GCU_LSU_data_7_in,
+      databus8 => simm_GCU_LSU,
       data => databus_GCU_LSU,
       databus_cntrl => GCU_LSU_mux_ctrl_in);
 
-  PARAM_bus_mux_inst : snappy_tta_input_mux_2
+  PARAM_bus_mux_inst : snappy_tta_input_mux_4
     generic map (
-      BUSW_0 => 8,
+      BUSW_0 => 32,
       BUSW_1 => 32,
+      BUSW_2 => 8,
+      BUSW_3 => 32,
       DATAW => 32)
     port map (
       databus0 => PARAM_data_0_in,
-      databus1 => simm_PARAM,
+      databus1 => PARAM_data_1_in,
+      databus2 => PARAM_data_2_in,
+      databus3 => simm_PARAM,
       data => databus_PARAM,
       databus_cntrl => PARAM_mux_ctrl_in);
 
@@ -459,15 +543,14 @@ begin -- comb_andor
       data => databus_B3,
       databus_cntrl => B3_mux_ctrl_in);
 
-  B4_bus_mux_inst : snappy_tta_input_mux_7
+  B4_bus_mux_inst : snappy_tta_input_mux_6
     generic map (
-      BUSW_0 => 1,
-      BUSW_1 => IMEMADDRWIDTH,
+      BUSW_0 => IMEMADDRWIDTH,
+      BUSW_1 => 32,
       BUSW_2 => 32,
-      BUSW_3 => 32,
-      BUSW_4 => 8,
+      BUSW_3 => 8,
+      BUSW_4 => 32,
       BUSW_5 => 32,
-      BUSW_6 => 32,
       DATAW => 32)
     port map (
       databus0 => B4_data_0_in,
@@ -476,13 +559,12 @@ begin -- comb_andor
       databus3 => B4_data_3_in,
       databus4 => B4_data_4_in,
       databus5 => B4_data_5_in,
-      databus6 => B4_data_6_in,
       data => databus_B4,
       databus_cntrl => B4_mux_ctrl_in);
 
   B3_1_1_bus_mux_inst : snappy_tta_input_mux_4
     generic map (
-      BUSW_0 => 1,
+      BUSW_0 => 32,
       BUSW_1 => 32,
       BUSW_2 => 32,
       BUSW_3 => 32,
@@ -495,6 +577,16 @@ begin -- comb_andor
       data => databus_B3_1_1,
       databus_cntrl => B3_1_1_mux_ctrl_in);
 
-  databus_B3_1_2 <= tce_ext(B3_1_2_data_0_in, databus_B3_1_2'length);
+  B3_1_2_bus_mux_inst : snappy_tta_input_mux_2
+    generic map (
+      BUSW_0 => 32,
+      BUSW_1 => 32,
+      DATAW => 32)
+    port map (
+      databus0 => B3_1_2_data_0_in,
+      databus1 => B3_1_2_data_1_in,
+      data => databus_B3_1_2,
+      databus_cntrl => B3_1_2_mux_ctrl_in);
+
 
 end comb_andor;

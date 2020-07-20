@@ -136,115 +136,115 @@ begin
       single_byte_copy_r <= '0';
     elsif rising_edge(clk) then
       if out_valid_r = '1' and out_ready = "1" then
-	out_valid_r <= '0';
+        out_valid_r <= '0';
       end if;
 
 
       buffer_read := false;
       stream_read := false;
       case op_state_r is
-	when Idle =>
-	  if t1_load_r = '1' and glock = '0' then
+        when Idle =>
+          if t1_load_r = '1' and glock = '0' then
             case t1_opcode_r is
-	      when opc_bypass_c =>
-		trans_len_r <= unsigned(t1_data_r) - 1;
-		out_data_r <= read_data;
-		out_valid_r <= read_valid;
-		out_dvalid_r <= '1';
-		out_cnt_r <= '1';
-		stream_read := true;
-		op_state_r <= Transfer;
+              when opc_bypass_c =>
+                trans_len_r <= unsigned(t1_data_r) - 1;
+                out_data_r <= read_data;
+                out_valid_r <= read_valid;
+                out_dvalid_r <= '1';
+                out_cnt_r <= '1';
+                stream_read := true;
+                op_state_r <= Transfer;
 
-	      when opc_copy_c =>
-		trans_len_r <= unsigned(t1_data_r);
-		first_read_idx := buffer_write_idx - unsigned(o1_data_r);
-		
-		copy_first_r <= first_read_idx;
-	        copy_last_r <= buffer_write_idx;
-		buffer_read_idx <= first_read_idx + 1;
-		if unsigned(o1_data_r) = 1 then
+              when opc_copy_c =>
+                trans_len_r <= unsigned(t1_data_r);
+                first_read_idx := buffer_write_idx - unsigned(o1_data_r);
+                
+                copy_first_r <= first_read_idx;
+                copy_last_r <= buffer_write_idx;
+                buffer_read_idx <= first_read_idx + 1;
+                if unsigned(o1_data_r) = 1 then
                     single_byte_copy_r <= '0';
-		else
-		    single_byte_copy_r <= '1';
-		end if;
+                else
+                    single_byte_copy_r <= '1';
+                end if;
 
-		buffer_read := true;
-		buffer_idx  := first_read_idx;
+                buffer_read := true;
+                buffer_idx  := first_read_idx;
 
-		out_dvalid_r <= '1';
-		out_cnt_r    <= '1';
-	        
-		op_state_r <= Copy;
-	      when opc_end_c =>
-		out_valid_r <= '1';
-		out_dvalid_r <= '0';
-		out_last_r <= '1';
-		out_cnt_r <= '0';
-		op_state_r <= Last;
-	      when others => -- opc_read_c
-	        r1_data_r <= read_data;
-		stream_read := true;
-	    end case;
-	  end if;
+                out_dvalid_r <= '1';
+                out_cnt_r    <= '1';
+                
+                op_state_r <= Copy;
+              when opc_end_c =>
+                out_valid_r <= '1';
+                out_dvalid_r <= '0';
+                out_last_r <= '1';
+                out_cnt_r <= '0';
+                op_state_r <= Last;
+              when others => -- opc_read_c
+                r1_data_r <= read_data;
+                stream_read := true;
+            end case;
+          end if;
         when Transfer =>
-	  if out_valid_r = '0' then
-	    out_data_r <= read_data;
-	    out_valid_r <= read_valid;
-	    stream_read := true;
-	  else
-	    if out_ready = "1" then
-	      if trans_len_r = 0 then
-	        op_state_r <= Idle;
-	        out_valid_r <= '0';
-	      else
-	        out_data_r <= read_data;
-		out_valid_r <= read_valid;
-		stream_read := true;
-		
-		trans_len_r <= trans_len_r - 1;
-	      end if;
+          if out_valid_r = '0' then
+            out_data_r <= read_data;
+            out_valid_r <= read_valid;
+            stream_read := true;
+          else
+            if out_ready = "1" then
+              if trans_len_r = 0 then
+                op_state_r <= Idle;
+                out_valid_r <= '0';
+              else
+                out_data_r <= read_data;
+                out_valid_r <= read_valid;
+                stream_read := true;
+                
+                trans_len_r <= trans_len_r - 1;
+              end if;
             end if;
           end if;
         when Copy =>
-	  if out_ready = "1" then
-	    if trans_len_r = 0 then
-	      out_valid_r <= '0';
-	      op_state_r <= Idle;
+          if out_ready = "1" then
+            if trans_len_r = 0 then
+              out_valid_r <= '0';
+              op_state_r <= Idle;
             else
-	      out_valid_r <= '1';
-	      out_data_r <= buffer_read_data_r;
+              out_valid_r <= '1';
+              out_data_r <= buffer_read_data_r;
 
-	      if single_byte_copy_r = '1' then
-		buffer_read := true;
-		buffer_idx := buffer_read_idx;
-	        buffer_read_idx <= buffer_read_idx + 1;
-	      end if;
-	      trans_len_r <= trans_len_r - 1;
-	    end if;
-	  end if;   
-	when Last =>
-	  if out_ready = "1" then
-	    out_valid_r <= '0';
-	    out_last_r <= '0';
-	    op_state_r <= Idle;
+              if single_byte_copy_r = '1' then
+                buffer_read := true;
+                buffer_idx := buffer_read_idx;
+                buffer_read_idx <= buffer_read_idx + 1;
+              end if;
+              trans_len_r <= trans_len_r - 1;
+            end if;
+          end if;   
+        when Last =>
+          if out_ready = "1" then
+            out_valid_r <= '0';
+            out_last_r <= '0';
+            op_state_r <= Idle;
           end if;
       end case;
 
       if in_ready_r = '1' and in_valid = "1" then
-	read_data_r <= read_data;
-	if not stream_read then
-	  in_ready_r <= '0';
-	  read_valid_r <= '1';
-	end if;
+        read_data_r <= read_data;
+        if not stream_read then
+          in_ready_r <= '0';
+          read_valid_r <= '1';
+        end if;
       else
-	if stream_read or read_valid_r = '0' then
+        if stream_read or read_valid_r = '0' then
           read_valid_r <= '0';
-	  in_ready_r <= '1';
+          in_ready_r <= '1';
         end if;
       end if;
 
       if out_valid_r = '1' and out_ready = "1" then
-	buffer_r(to_integer(buffer_write_idx)) <= out_data_r;
+        buffer_r(to_integer(buffer_write_idx)) <= out_data_r;
         buffer_write_idx <= buffer_write_idx + 1;
       end if;
 
@@ -266,7 +266,7 @@ begin
   end process read_mux;
 
   lock_request: process(t1_load_r, t1_opcode_r, read_valid_r,
-	                op_state_r, out_valid_r, out_ready)
+                        op_state_r, out_valid_r, out_ready)
   begin
     glockreq <= '0';
     -- TODO: can read buffer while copy is is progress
