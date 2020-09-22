@@ -79,7 +79,7 @@ begin
   main_sp : process (clk)
   begin
     if clk'event and clk = '1' then
-      if load_wr_in = '1' then
+      if glock_in = '0' and load_wr_in = '1' then
         reg_r(to_integer(unsigned(addr_wr_in))) <= data_wr_in;
       end if;
     end if;

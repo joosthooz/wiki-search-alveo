@@ -77,6 +77,8 @@ entity snappy_tta_ifetch is
             db_cyclecnt : out std_logic_vector(64-1 downto 0);
             db_lockcnt  : out std_logic_vector(64-1 downto 0);
     cond_in    : in std_logic_vector(31 downto 0);
+    comp_in    : in std_logic_vector(31 downto 0);
+    comp_load  : in std_logic;
     cond_load  : in std_logic;
 
     clk  : in std_logic;

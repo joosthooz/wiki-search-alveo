@@ -12,15 +12,15 @@ entity tta_wrapper is
 
         in_valid    : in  std_logic;
         in_ready    : out std_logic;
-        in_data     : in  std_logic_vector(8-1 downto 0);
-        in_cnt      : in  std_logic_vector(0 downto 0);
+        in_data     : in  std_logic_vector(32-1 downto 0);
+        in_cnt      : in  std_logic_vector(1 downto 0);
         in_last     : in  std_logic;
 
         out_valid   : out std_logic;
         out_ready   : in  std_logic;
         out_dvalid  : out std_logic;
-        out_data    : out std_logic_vector(8-1 downto 0);
-        out_cnt     : out std_logic_vector(0 downto 0);
+        out_data    : out std_logic_vector(32-1 downto 0);
+        out_cnt     : out std_logic_vector(1 downto 0);
         out_last    : out std_logic
     );
 end entity tta_wrapper;

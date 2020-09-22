@@ -21,14 +21,14 @@ entity snappy_tta is
     locked : out std_logic;
     fu_Stream_fu_in_valid : in std_logic_vector(0 downto 0);
     fu_Stream_fu_in_ready : out std_logic_vector(0 downto 0);
-    fu_Stream_fu_in_data : in std_logic_vector(7 downto 0);
-    fu_Stream_fu_in_cnt : in std_logic_vector(0 downto 0);
+    fu_Stream_fu_in_data : in std_logic_vector(31 downto 0);
+    fu_Stream_fu_in_cnt : in std_logic_vector(1 downto 0);
     fu_Stream_fu_in_last : in std_logic_vector(0 downto 0);
     fu_Stream_fu_out_valid : out std_logic_vector(0 downto 0);
     fu_Stream_fu_out_ready : in std_logic_vector(0 downto 0);
     fu_Stream_fu_out_dvalid : out std_logic_vector(0 downto 0);
-    fu_Stream_fu_out_data : out std_logic_vector(7 downto 0);
-    fu_Stream_fu_out_cnt : out std_logic_vector(0 downto 0);
+    fu_Stream_fu_out_data : out std_logic_vector(31 downto 0);
+    fu_Stream_fu_out_cnt : out std_logic_vector(1 downto 0);
     fu_Stream_fu_out_last : out std_logic_vector(0 downto 0);
     fu_LSU_avalid_out : out std_logic_vector(0 downto 0);
     fu_LSU_aready_in : in std_logic_vector(0 downto 0);
@@ -247,7 +247,7 @@ architecture structural of snappy_tta is
   signal inst_fetch_fetchblock_wire : std_logic_vector(IMEMWIDTHINMAUS*IMEMMAUWIDTH-1 downto 0);
   signal inst_fetch_cond_in_wire : std_logic_vector(32-1 downto 0);
   signal inst_fetch_cond_load_wire : std_logic;
-  signal inst_fetch_comp_data_wire : std_logic_vector(32-1 downto 0);
+  signal inst_fetch_comp_in_wire : std_logic_vector(32-1 downto 0);
   signal inst_fetch_comp_load_wire : std_logic;
   signal iu_IU_1x32_data_rd_out_wire : std_logic_vector(31 downto 0);
   signal iu_IU_1x32_load_rd_in_wire : std_logic;
@@ -290,7 +290,7 @@ architecture structural of snappy_tta is
       fetchblock : out std_logic_vector(IMEMWIDTHINMAUS*IMEMMAUWIDTH-1 downto 0);
       cond_in : in std_logic_vector(32-1 downto 0);
       cond_load : in std_logic;
-      comp_data : in std_logic_vector(32-1 downto 0);
+      comp_in : in std_logic_vector(32-1 downto 0);
       comp_load : in std_logic;
       db_rstx : in std_logic;
       db_lockreq : in std_logic;
@@ -436,14 +436,14 @@ architecture structural of snappy_tta is
       t1_opcode_in : in std_logic_vector(2-1 downto 0);
       in_valid : in std_logic_vector(1-1 downto 0);
       in_ready : out std_logic_vector(1-1 downto 0);
-      in_data : in std_logic_vector(8-1 downto 0);
-      in_cnt : in std_logic_vector(1-1 downto 0);
+      in_data : in std_logic_vector(32-1 downto 0);
+      in_cnt : in std_logic_vector(2-1 downto 0);
       in_last : in std_logic_vector(1-1 downto 0);
       out_valid : out std_logic_vector(1-1 downto 0);
       out_ready : in std_logic_vector(1-1 downto 0);
       out_dvalid : out std_logic_vector(1-1 downto 0);
-      out_data : out std_logic_vector(8-1 downto 0);
-      out_cnt : out std_logic_vector(1-1 downto 0);
+      out_data : out std_logic_vector(32-1 downto 0);
+      out_cnt : out std_logic_vector(2-1 downto 0);
       out_last : out std_logic_vector(1-1 downto 0);
       clk : in std_logic;
       rstx : in std_logic;
@@ -610,7 +610,7 @@ begin
   decomp_fetchblock_wire <= inst_fetch_fetchblock_wire;
   inst_fetch_cond_in_wire <= ic_socket_gcu_o1_1_data_wire;
   inst_fetch_cond_load_wire <= inst_decoder_fu_gcu_cond_load_wire;
-  inst_fetch_comp_data_wire <= ic_socket_gcu_o1_1_1_data_wire;
+  inst_fetch_comp_in_wire <= ic_socket_gcu_o1_1_1_data_wire;
   inst_fetch_comp_load_wire <= inst_decoder_fu_gcu_comp_load_wire;
   inst_decoder_instructionword_wire <= decomp_instructionword_wire;
   inst_decoder_lock_wire <= decomp_glock_wire;
@@ -742,7 +742,7 @@ begin
       fetchblock => inst_fetch_fetchblock_wire,
       cond_in => inst_fetch_cond_in_wire,
       cond_load => inst_fetch_cond_load_wire,
-      comp_data => inst_fetch_comp_data_wire,
+      comp_in => inst_fetch_comp_in_wire,
       comp_load => inst_fetch_comp_load_wire,
       db_rstx => db_tta_nreset,
       db_lockreq => db_lockrq,
