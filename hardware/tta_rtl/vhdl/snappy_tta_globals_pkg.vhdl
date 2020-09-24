@@ -3,7 +3,7 @@ use work.snappy_tta_imem_mau.all;
 
 package snappy_tta_globals is
   -- address width of the instruction memory
-  constant IMEMADDRWIDTH : positive := 10;
+  constant IMEMADDRWIDTH : positive := 11;
   -- width of the instruction memory in MAUs
   constant IMEMWIDTHINMAUS : positive := 1;
   -- width of instruction fetch block.
