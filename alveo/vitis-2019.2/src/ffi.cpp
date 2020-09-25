@@ -7,6 +7,7 @@
 #include <memory>
 #include <omp.h>
 #include <stdlib.h>
+#include <chrono>
 
 typedef struct {
 
@@ -180,7 +181,16 @@ const WordMatchResults *word_match_run(
  */
 WordMatchHealthInfo word_match_health() {
     WordMatchHealthInfo result;
+    static long long int cpu0_last_power;
+    static long long int cpu1_last_power;
+    static std::chrono::steady_clock::time_point time_prev;
+    int i;
+    FILE *fff;
+    char filename[2][256];
+    long long int energy[2];
+
     try {
+        //read FPGA power
         unsigned int index = 0;
         if (state->hw_impl) {
             index = state->hw_impl->get_device_index();
@@ -190,6 +200,26 @@ WordMatchHealthInfo word_match_health() {
         result.fpga_temp = info.fpga_temp;
         result.power_in = info.power_in;
         result.power_vccint = info.power_vccint;
+
+        //read CPU power
+        std::chrono::steady_clock::time_point time_now = std::chrono::steady_clock::now();
+        for(int j=0;j<2;j++) {
+            sprintf(filename[j],"/sys/class/powercap/intel-rapl/intel-rapl:%d/energy_uj", j);
+            fff=fopen(filename[j],"r");
+            if (fff==NULL) {
+                fprintf(stderr,"\tError opening %s!\n",filename[j]);
+            }
+            else {
+                fscanf(fff,"%lld",&energy[j]);
+                fclose(fff);
+            }
+        }
+        auto timediff = std::chrono::duration_cast<std::chrono::microseconds>(time_now - time_prev).count();
+        time_prev = time_now;
+        result.cpu0_power = (energy[0] - cpu0_last_power) / timediff;
+        result.cpu1_power = (energy[1] - cpu1_last_power) / timediff;
+        cpu0_last_power = energy[0];
+        cpu1_last_power = energy[1];
         return result;
     } catch (const std::exception& e) {
         if (state != nullptr) {
