@@ -23,8 +23,8 @@ end entity tta_wrapper_resize;
 architecture rtl of tta_wrapper_resize is
     signal narrow_in_valid, narrow_in_ready, narrow_in_last,
            narrow_out_valid, narrow_out_ready, narrow_out_dvalid, narrow_out_last : std_logic;
-    signal narrow_in_cnt, narrow_out_cnt : std_logic_vector(0 downto 0);
-    signal narrow_in_data, narrow_out_data : std_logic_vector(8-1 downto 0);
+    signal narrow_in_cnt, narrow_out_cnt : std_logic_vector(1 downto 0);
+    signal narrow_in_data, narrow_out_data : std_logic_vector(32-1 downto 0);
 begin
 
 
@@ -34,8 +34,8 @@ begin
     IN_COUNT_MAX => 8,
     IN_COUNT_WIDTH => 3,
 
-    OUT_COUNT_MAX  => 1,
-    OUT_COUNT_WIDTH => 1
+    OUT_COUNT_MAX  => 4,
+    OUT_COUNT_WIDTH => 2
   ) port map(
     clk => clk, reset => reset,
     
@@ -56,8 +56,8 @@ begin
   up_reshaper : entity work.StreamReshaper
   generic map (
     ELEMENT_WIDTH => 8,
-    IN_COUNT_MAX => 1,
-    IN_COUNT_WIDTH => 1,
+    IN_COUNT_MAX => 4,
+    IN_COUNT_WIDTH => 2,
 
     OUT_COUNT_MAX  => 8,
     OUT_COUNT_WIDTH => 4
