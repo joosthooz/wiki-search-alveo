@@ -3,7 +3,7 @@ VHDL_FILES = $(shell python3 -m vhdeps dump krnl_word_match_rtl \
                -i ../../hardware/vhdl \
                -i ../../hardware/fletcher/hardware \
                -i ../../hardware/tta_rtl \
-               -x unisim:$(XILINX_VIVADO)/data/vhdl/src/unisims/unisim_VCOMP.vhd
+               -x unisim:$(XILINX_VIVADO)/data/vhdl/src/unisims/unisim_VCOMP.vhd \
                -i ../../hardware/tta_support_rtl \
                -msyn -v93 | cut -d ' ' -f 4-)
 
