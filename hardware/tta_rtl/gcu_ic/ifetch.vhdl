@@ -476,7 +476,7 @@ begin
       end if;
     elsif (unsigned(pc_opcode) = IFE_BNE) then
       take_cond_branch <= '0';
-      if cond /= comp    then
+      if signed(cond) /= signed(comp)    then
         take_cond_branch <= '1';
       end if;
     elsif (unsigned(pc_opcode) = IFE_BEQ) then
@@ -489,7 +489,7 @@ begin
     end if;
   end process take_cond_branch_proc;
   
-  cond_comp_shadow_reg_proc : process(rstx, clk)
+  cond_comp_shadow_reg_proc : process(clk, rstx)
   begin
     if rstx = '0' then
       cond_r <= (others => '0');

@@ -206,6 +206,7 @@ begin
           if t1_load_r = '1' and glock = '0' then
             case t1_opcode_r is
               when opc_bypass_c =>
+                if unsigned(t1_data_r) > 0 then
                 out_cnt_r <= t1_data_r(1 downto 0);
                 truncated_len := "00" & t1_data_r(31 downto 2);
                 if to_integer(unsigned(t1_data_r(1 downto 0))) = 0 then
@@ -218,6 +219,7 @@ begin
                 out_dvalid_r <= '1';
                 reading_stream <= '1';
                 op_state_r <= Transfer;
+                end if;
 
               when opc_copy_c =>
                 trans_len_r <= unsigned(t1_data_r);
@@ -581,7 +583,7 @@ begin
         elsif op_state_r = Idle and t1_load_r = '1' and glock = '0'
               and t1_opcode_r = opc_bypass_c then
             bytes := to_integer(unsigned(t1_data_r(1 downto 0)));
-            if bytes = 0 then
+            if bytes = 0 and unsigned(t1_data_r) > 0 then
               bytes := 4;
             end if;
             buf_offset := buf_offset - bytes;
@@ -634,8 +636,11 @@ begin
     if t1_load_r = '1' and op_state_r /= Idle and op_state_r /= Copy then
       glockreq <= '1';
     end if;
+    if t1_load_r = '1' and op_state_r = Copy and t1_opcode_r /= opc_read_c then
+      glockreq <= '1';
+    end if;
 
-    if t1_load_r = '1' and t1_opcode_r = opc_read_c and to_integer(read_buf_cnt_r) < 4 then
+    if t1_load_r = '1' and t1_opcode_r = opc_read_c and to_integer(read_buf_cnt_r) = 0 then
       glockreq <= '1';
     end if;
 
