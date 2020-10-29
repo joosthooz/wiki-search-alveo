@@ -252,13 +252,13 @@ begin
     mmio_write(11, X"00000000", mmio_source, mmio_sink);
 
     -- Input buffer size and distribution over subkernels.
+    mmio_write(12, X"00000000", mmio_source, mmio_sink); -- Pages first index
 --    mmio_write(13, X"00000001", mmio_source, mmio_sink); -- Middle index 3
 --    mmio_write(14, X"00000002", mmio_source, mmio_sink); -- Middle index 3
 --    mmio_write(15, X"00000003", mmio_source, mmio_sink); -- Pages last index 3
 --    mmio_write(13, X"0000000a", mmio_source, mmio_sink); -- Middle index 30
 --    mmio_write(14, X"00000014", mmio_source, mmio_sink); -- Middle index 30
 --    mmio_write(15, X"0000001e", mmio_source, mmio_sink); -- Pages last index 30
-    mmio_write(12, X"00000000", mmio_source, mmio_sink); -- Pages first index
     mmio_write(13, X"00000064", mmio_source, mmio_sink); -- Middle index 300
     mmio_write(14, X"000000c8", mmio_source, mmio_sink); -- Middle index 300
     mmio_write(15, X"0000012c", mmio_source, mmio_sink); -- Pages last index 300
