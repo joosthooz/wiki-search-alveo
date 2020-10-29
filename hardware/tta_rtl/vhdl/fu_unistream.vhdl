@@ -546,7 +546,7 @@ begin
   next_byte_valid <= '0' when read_buf_cnt_r = 0 else '1';
   next_byte <= read_buf_r(7 downto 0);
 
-  read_mux: process(read_valid_r, read_data_r, in_valid, in_data)
+  read_mux: process(read_valid_r, read_data_r, read_count_r, in_valid, in_data, in_cnt)
   begin
     if read_valid_r = '1' then
       read_valid <= '1';
