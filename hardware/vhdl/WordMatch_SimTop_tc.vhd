@@ -238,18 +238,30 @@ begin
     -- Input buffer addresses.
     mmio_write(4, X"00000000", mmio_source, mmio_sink); -- Pages title_offsets
     mmio_write(5, X"00000000", mmio_source, mmio_sink);
-    mmio_write(6, X"00000040", mmio_source, mmio_sink); -- Pages title_values
+--    mmio_write(6, X"00000040", mmio_source, mmio_sink); -- Pages title_values -- simplewiki-lz4/snappytest-3
+--    mmio_write(6, X"00000080", mmio_source, mmio_sink); -- Pages title_values -- simplewiki-lz4/snappytest-30
+    mmio_write(6, X"000004c0", mmio_source, mmio_sink); -- Pages title_values -- simplewiki-lz4/snappytest-300
     mmio_write(7, X"00000000", mmio_source, mmio_sink);
-    mmio_write(8, X"00000080", mmio_source, mmio_sink); -- Pages text_offsets
+--    mmio_write(8, X"00000080", mmio_source, mmio_sink); -- Pages text_offsets -- simplewiki-lz4/snappytest-3
+--    mmio_write(8, X"000001c0", mmio_source, mmio_sink); -- Pages text_offsets -- simplewiki-lz4/snappytest-30
+    mmio_write(8, X"00000fc0", mmio_source, mmio_sink); -- Pages text_offsets -- simplewiki-lz4/snappytest-300
     mmio_write(9, X"00000000", mmio_source, mmio_sink);
-    mmio_write(10, X"000000c0", mmio_source, mmio_sink); -- Pages text_values
+--    mmio_write(10, X"000000c0", mmio_source, mmio_sink); -- Pages text_values -- simplewiki-lz4/snappytest-3
+--    mmio_write(10, X"00000240", mmio_source, mmio_sink); -- Pages text_values -- simplewiki-lz4/snappytest-30
+    mmio_write(10, X"00001480", mmio_source, mmio_sink); -- Pages text_values -- simplewiki-lz4/snappytest-300
     mmio_write(11, X"00000000", mmio_source, mmio_sink);
 
     -- Input buffer size and distribution over subkernels.
+--    mmio_write(13, X"00000001", mmio_source, mmio_sink); -- Middle index 3
+--    mmio_write(14, X"00000002", mmio_source, mmio_sink); -- Middle index 3
+--    mmio_write(15, X"00000003", mmio_source, mmio_sink); -- Pages last index 3
+--    mmio_write(13, X"0000000a", mmio_source, mmio_sink); -- Middle index 30
+--    mmio_write(14, X"00000014", mmio_source, mmio_sink); -- Middle index 30
+--    mmio_write(15, X"0000001e", mmio_source, mmio_sink); -- Pages last index 30
     mmio_write(12, X"00000000", mmio_source, mmio_sink); -- Pages first index
-    mmio_write(13, X"00000001", mmio_source, mmio_sink); -- Middle index
-    mmio_write(14, X"00000002", mmio_source, mmio_sink); -- Middle index
-    mmio_write(15, X"00000003", mmio_source, mmio_sink); -- Pages last index
+    mmio_write(13, X"00000064", mmio_source, mmio_sink); -- Middle index 300
+    mmio_write(14, X"000000c8", mmio_source, mmio_sink); -- Middle index 300
+    mmio_write(15, X"0000012c", mmio_source, mmio_sink); -- Pages last index 300
 
     -- Result buffer addresses.
     mmio_write(16, X"00000000", mmio_source, mmio_sink); -- Result title_offsets
