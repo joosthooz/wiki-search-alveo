@@ -657,7 +657,7 @@ begin
     pages_text_ready <= '1';
 
     -- Decompress the articles.
-    tta_inst: tta_wrapper_resize
+    tta_inst: tta_multicore_wrapper
       port map (
         clk                     => dec_clk,
         reset                   => dec_reset,
