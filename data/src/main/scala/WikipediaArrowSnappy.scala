@@ -1,4 +1,12 @@
-import org.xerial.snappy.Snappy
+import org.xerial.snappy.SnappyFramedOutputStream
+import net.jpountz.lz4.LZ4Factory
+import net.jpountz.lz4.LZ4FrameOutputStream
+import net.jpountz.lz4.LZ4FrameOutputStream.BLOCKSIZE
+import java.io.FilterOutputStream
+import java.io.ByteArrayOutputStream
+
+import org.apache.commons.lang.ArrayUtils
+import java.nio.{ByteBuffer, ByteOrder}
 
 import collection.JavaConverters._
 import java.io._
@@ -32,7 +40,7 @@ object WikipediaArrowSnappy {
     val output = args(1)
 
     val spark = SparkSession.builder
-      .appName("Wikipedia to Arrow with Snappy")
+      .appName("Wikipedia to Arrow with LZ4/Snappy")
       .config("arrow.memory.debug.allocator", true)
       .getOrCreate
 
@@ -104,9 +112,32 @@ object WikipediaArrowSnappy {
 
     val replace = raw"\[\[(?:[^\]\[]+\|)?([^\]\[]+)\]\]"
 
-    // Create Snappy compress UDF
-    val compress: String => Array[Byte] = x =>
-      Snappy.compress(x.getBytes("UTF-8"))
+    val lz4Header = Array[Byte](0x04, 0x22, 0x4d, 0x18, //magic
+         0x40, 0x40, 0) //flags (version), block size, checksum
+    
+    // Create LZ4/Snappy compressed UDF
+    val compress: String => Array[Byte] = x => {
+
+        val lz4Factory = LZ4Factory.nativeInstance()
+        val lz4Compressor = lz4Factory.fastCompressor
+        val compressedBuffer = new ByteArrayOutputStream()
+//        val compressor = new LZ4FrameOutputStream(compressedBuffer, BLOCKSIZE.SIZE_64KB)
+        val compressor = new SnappyFramedOutputStream(compressedBuffer)
+        for (b <- x.getBytes("UTF-8")) compressor.write(b)
+        compressor.close()
+        compressedBuffer.toByteArray()
+/* LZ4 with manual header insertion (not needed, the LZ4FrameOutputStream works fine)
+        val compressed = lz4Compressor.compress(x.getBytes("UTF-8"))
+        val size = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)
+        size.putInt(compressed.size)
+        val header = ArrayUtils.addAll(lz4Header, size.array)
+        val dataWithHeader = ArrayUtils.addAll(header, compressed)
+        val footer = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)
+        footer.putInt(0)
+        ArrayUtils.addAll(dataWithHeader, footer)
+*/
+
+    }
     val snappy = udf(compress)
 
     spark.read
@@ -127,7 +158,7 @@ object WikipediaArrowSnappy {
             "$1"
           )
         )
-      )
+      ).limit(300)
       .foreachPartition { partition =>
         {
           val titleField = new FieldType(false, new ArrowType.Utf8(), null)
