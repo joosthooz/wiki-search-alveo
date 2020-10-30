@@ -49,7 +49,8 @@ begin
   input_FIFO: StreamFIFO
     generic map (
       DEPTH_LOG2  => 13,
-      DATA_WIDTH  => 64 + 3 + 1
+      DATA_WIDTH  => 64 + 3 + 1,
+      RAM_CONFIG  => "URAM"
     )
     port map (
       in_clk    => clk,
