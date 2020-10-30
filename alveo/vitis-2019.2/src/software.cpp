@@ -1,6 +1,7 @@
 
 #include "software.hpp"
-#include <snappy.h>
+//#include <snappy.h>
+#include <lz4frame.h>
 #include <omp.h>
 #include <chrono>
 #include <string.h>
@@ -102,6 +103,7 @@ void SoftwareWordMatch::execute(const WordMatchConfig &config,
 
                 // Perform Snappy decompression.
                 size_t uncompressed_length;
+/*
                 if (!snappy::GetUncompressedLength(article_data_ptr, article_data_size, &uncompressed_length)) {
                     throw std::runtime_error("snappy decompression error");
                 }
@@ -109,6 +111,31 @@ void SoftwareWordMatch::execute(const WordMatchConfig &config,
                 if (!snappy::RawUncompress(article_data_ptr, article_data_size, &article_text[0])) {
                     throw std::runtime_error("snappy decompression error");
                 }
+*/
+		int lz4_ret;
+		size_t article_data_size_lz4 = (size_t)article_data_size;
+		LZ4F_dctx* dctxPtr;
+		if (LZ4F_createDecompressionContext(&dctxPtr, LZ4F_VERSION)) {
+			printf("LZ4 error creating decompression context.\n");
+                        throw std::runtime_error("LZ4 decompression error");
+		}
+		LZ4F_frameInfo_t frameInfo;
+		LZ4F_decompressOptions_t decompOpts = {0};
+		lz4_ret = LZ4F_getFrameInfo(dctxPtr, &frameInfo, article_data_ptr, &article_data_size_lz4);
+		if (LZ4F_isError(lz4_ret)) {
+			printf("LZ4 error getting frame info\n");
+			throw std::runtime_error("LZ4 decompression error");
+		}
+		uncompressed_length = frameInfo.contentSize;
+		printf("article size: %d\n", uncompressed_length);
+		article_text.resize(uncompressed_length);
+
+		if (LZ4F_isError(LZ4F_decompress(dctxPtr, &article_text[0], &uncompressed_length,
+                                   article_data_ptr, &article_data_size_lz4, &decompOpts))) {
+			printf("LZ4 error decompressing data\n");
+                        throw std::runtime_error("LZ4 decompression error");
+                }
+
 
                 // Perform matching.
                 unsigned int num_matches = 0;
