@@ -1,11 +1,20 @@
 
 #include "software.hpp"
-//#include <snappy.h>
-#include <lz4frame.h>
+#include <snappy.h>
+#include <lz4.h>
 #include <omp.h>
 #include <chrono>
 #include <string.h>
 #include <ctype.h>
+
+//#define DEBUG
+#ifdef DEBUG
+#include <stdio.h>
+#undef DEBUG
+#define DEBUG(...) fprintf(stderr, __VA_ARGS__)
+#else
+#define DEBUG(...)
+#endif
 
 /**
  * Constructs the software word matcher.
@@ -101,41 +110,123 @@ void SoftwareWordMatch::execute(const WordMatchConfig &config,
                 const char *article_data_ptr = (const char*)data->GetValue(ii, &article_data_size);
                 presults.data_size += article_data_size + 4;
 
-                // Perform Snappy decompression.
+                // Perform decompression.
                 size_t uncompressed_length;
-/*
-                if (!snappy::GetUncompressedLength(article_data_ptr, article_data_size, &uncompressed_length)) {
-                    throw std::runtime_error("snappy decompression error");
-                }
-                article_text.resize(uncompressed_length);
-                if (!snappy::RawUncompress(article_data_ptr, article_data_size, &article_text[0])) {
-                    throw std::runtime_error("snappy decompression error");
-                }
+		const char snappy_header[] = {(char)0xff, 0x06, 0x00, 0x00, 0x73, 0x4e, 0x61, 0x50, 0x70, 0x59};
+		const char lz4_header[] = {0x04, 0x22, 0x4d, 0x18};
+/*		
+		for (int i = 0; i < 16; i++) {
+		printf("0x%02x ", (unsigned char)article_data_ptr[i]);
+		}
+		printf("\n");
 */
-		int lz4_ret;
-		size_t article_data_size_lz4 = (size_t)article_data_size;
-		LZ4F_dctx* dctxPtr;
-		if (LZ4F_createDecompressionContext(&dctxPtr, LZ4F_VERSION)) {
-			printf("LZ4 error creating decompression context.\n");
-                        throw std::runtime_error("LZ4 decompression error");
-		}
-		LZ4F_frameInfo_t frameInfo;
-		LZ4F_decompressOptions_t decompOpts = {0};
-		lz4_ret = LZ4F_getFrameInfo(dctxPtr, &frameInfo, article_data_ptr, &article_data_size_lz4);
-		if (LZ4F_isError(lz4_ret)) {
-			printf("LZ4 error getting frame info\n");
-			throw std::runtime_error("LZ4 decompression error");
-		}
-		uncompressed_length = frameInfo.contentSize;
-		printf("article size: %d\n", uncompressed_length);
-		article_text.resize(uncompressed_length);
 
-		if (LZ4F_isError(LZ4F_decompress(dctxPtr, &article_text[0], &uncompressed_length,
-                                   article_data_ptr, &article_data_size_lz4, &decompOpts))) {
-			printf("LZ4 error decompressing data\n");
-                        throw std::runtime_error("LZ4 decompression error");
+		if (!strncmp(article_data_ptr, snappy_header, 10)) {
+			DEBUG("Snappy\n");
+		unsigned int chunk_type = (unsigned char)article_data_ptr[10];
+		switch (chunk_type) {
+			default:
+				printf("Unknown Snappy chunk type (0x%x)\n", chunk_type);
+				throw std::runtime_error("snappy decompression error");
+				break;
+			case 1:
+				uncompressed_length = ((unsigned char)article_data_ptr[11] | ((unsigned char)article_data_ptr[12] << 8) | ((unsigned char)article_data_ptr[13] << 16)) - 4; //minus the 4 checksum bytes
+				DEBUG("uncompressed chunk (length %lu)\n", uncompressed_length);
+				if (uncompressed_length > (article_data_size - 18)) {
+					printf("not enough input data available (%lu) for uncompressed chunk size (%lu)\n", 
+						article_data_size - 18, uncompressed_length);
+					throw std::runtime_error("snappy decompression error");
+				}	
+				memcpy(&article_text[0], &article_data_ptr[18], uncompressed_length);
+				break;
+			case 0: //compressed chunk
+				DEBUG("compressed chunk\n");
+		if (!snappy::GetUncompressedLength(&article_data_ptr[18], article_data_size, &uncompressed_length)) {
+		    printf("Snappy library cannot find uncompressed length\n");
+                    throw std::runtime_error("snappy decompression error");
                 }
+		article_text.resize(uncompressed_length);
+		if (!snappy::IsValidCompressedBuffer(&article_data_ptr[18], article_data_size-18)) {
+		    printf("not valid Snappy\n");
+		    break;
+		}
 
+                if (!snappy::RawUncompress(&article_data_ptr[18], article_data_size-18, &article_text[0])) {
+                //if (!snappy::Uncompress(article_data_ptr, article_data_size, &article_text)) {
+		    printf("Error decompressing Snappy\n");
+                    //throw std::runtime_error("snappy decompression error");
+                }
+		}
+		
+		
+		} else if (!strncmp(article_data_ptr, lz4_header, 4)) {
+			DEBUG("LZ4\n");
+
+  int offset = 4;
+  uint8_t flg = article_data_ptr[offset++];
+  uint8_t bd = article_data_ptr[offset++];
+  uint8_t max_block_size = ((bd >> 4) & 0x7);
+
+  if (max_block_size != 4) {
+    DEBUG("Warning: max block size = %d\n", max_block_size);
+  }
+
+  uint8_t version_number = ((flg >> 6) & 0x3);
+  DEBUG("version_number=%d\n", version_number);
+  uint8_t block_independence = ((flg >> 5) & 0x1);
+  DEBUG("block_independence=%d\n", block_independence);
+  uint8_t block_checksum_present = ((flg >> 4) & 0x1);
+  DEBUG("block_checksum_present=%d\n", block_checksum_present);
+  uint8_t content_size_present = ((flg >> 3) & 0x1);
+  DEBUG("content_size_present=%d\n", content_size_present);
+  uint8_t content_checksum_present = ((flg >> 2) & 0x1);
+  DEBUG("content_checksum_present=%d\n", content_checksum_present);
+  if (version_number != 0x01) {
+    printf("Wrong LZ4 version.\n");
+    break; //version must be set to 01
+  }
+  if (content_size_present) {
+	long frame_size = 0;
+	for (int i = 0; i < 8; i++) {
+		frame_size |= (unsigned char)article_data_ptr[offset + i] << (i * 8);
+	}
+	DEBUG("frame_size %ull\n", frame_size);
+	offset += 8;
+  }
+
+  offset++; //frame header checksum
+
+	//uncompressed length is not known for our LZ4 options
+	size_t compressed_length = 0;
+	for (int i = 0; i < 4; i++) {
+                compressed_length |= (unsigned char)article_data_ptr[offset + i] << (i * 8);
+	}
+	offset += 4;
+
+	if ((compressed_length >> 31) & 1) {
+		compressed_length &= ~(1 << 31);
+		DEBUG("uncompressed block, size %lu\n", compressed_length);
+		if (compressed_length > (article_data_size - offset)) {
+                    printf("not enough input data available (%lu) for uncompressed chunk size (%lu)\n",
+                        article_data_size - offset, uncompressed_length);
+                    throw std::runtime_error("snappy decompression error");
+                }
+		article_text.resize(compressed_length);
+                memcpy(&article_text[0], &article_data_ptr[offset], compressed_length);
+
+	} else {
+		DEBUG("compressed_length: %d\n", uncompressed_length);
+		article_text.resize(64 * 1024); //64k should be sufficient
+
+		int ret = LZ4_decompress_safe (&article_data_ptr[offset], &article_text[0], compressed_length, 64 * 1024);
+		if (ret < 0) {
+			printf("LZ4 error %d decompressing data\n", ret);
+                        //throw std::runtime_error("LZ4 decompression error");
+                }
+		}
+		} else {
+			printf("Error; unknown compression header\n");
+		}
 
                 // Perform matching.
                 unsigned int num_matches = 0;
