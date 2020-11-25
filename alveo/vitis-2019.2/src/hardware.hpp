@@ -151,7 +151,7 @@ public:
     HardwareWordMatch(
         const std::string &bin_prefix,
         const std::string &kernel_name,
-        unsigned int num_subkernels=3,
+        unsigned int num_subkernels=4,
         bool quiet=false);
 
     /**

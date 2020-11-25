@@ -195,27 +195,27 @@ architecture Behavorial of WordMatch_AxiTop is
   -- Signal defs for the internal Fletcher busses.
   signal pages_title_bus_req        : fletcher_read_req;
   signal pages_title_bus_rep        : fletcher_read_rep;
-  signal pages_text_bus_req         : fletcher_read_req_array(0 to 2);
-  signal pages_text_bus_rep         : fletcher_read_rep_array(0 to 2);
+  signal pages_text_bus_req         : fletcher_read_req_array(0 to 3);
+  signal pages_text_bus_rep         : fletcher_read_rep_array(0 to 3);
   signal result_title_bus_req       : fletcher_write_req;
   signal result_title_bus_rep       : fletcher_write_rep;
   signal result_count_stats_bus_req : fletcher_write_req;
   signal result_count_stats_bus_rep : fletcher_write_rep;
 
   -- Page text command/unlock streams.
-  signal pages_text_cmd_valid       : std_logic_vector(2 downto 0);
-  signal pages_text_cmd_ready       : std_logic_vector(2 downto 0);
-  signal pages_text_cmd_idx         : std_logic_vector(127 downto 0);
+  signal pages_text_cmd_valid       : std_logic_vector(3 downto 0);
+  signal pages_text_cmd_ready       : std_logic_vector(3 downto 0);
+  signal pages_text_cmd_idx         : std_logic_vector(159 downto 0);
   signal pages_text_cmd_valuesAddr  : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal pages_text_cmd_offsetAddr  : std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
   signal pages_text_cmd_ctrl        : std_logic_vector(BUS_ADDR_WIDTH*2-1 downto 0);
-  signal pages_text_unl_valid       : std_logic_vector(2 downto 0);
-  signal pages_text_unl_ready       : std_logic_vector(2 downto 0);
+  signal pages_text_unl_valid       : std_logic_vector(3 downto 0);
+  signal pages_text_unl_ready       : std_logic_vector(3 downto 0);
 
   -- Match count streams for each of the two partitions.
-  signal match_count_part_valid     : std_logic_vector(2 downto 0);
-  signal match_count_part_ready     : std_logic_vector(2 downto 0);
-  signal match_count_part_amount    : std_logic_vector(47 downto 0);
+  signal match_count_part_valid     : std_logic_vector(3 downto 0);
+  signal match_count_part_ready     : std_logic_vector(3 downto 0);
+  signal match_count_part_amount    : std_logic_vector(63 downto 0);
 
   -- Arbiter'd match count stream.
   signal match_count_arb_valid      : std_logic;
@@ -462,9 +462,9 @@ begin
       BUS_ADDR_WIDTH            => BUS_ADDR_WIDTH,
       BUS_LEN_WIDTH             => BUS_LEN_WIDTH,
       BUS_DATA_WIDTH            => BUS_READ_INNER_DATA_WIDTH,
-      NUM_SLAVE_PORTS           => 4,
+      NUM_SLAVE_PORTS           => 5,
       ARB_METHOD                => "RR-STICKY",
-      MAX_OUTSTANDING           => 4,
+      MAX_OUTSTANDING           => 5,
       RAM_CONFIG                => "",
       SLV_REQ_SLICES            => true,
       MST_REQ_SLICE             => true,
@@ -511,14 +511,23 @@ begin
       bs02_rdat_data            => pages_text_bus_rep(2).rdat_data,
       bs02_rdat_last            => pages_text_bus_rep(2).rdat_last,
 
-      bs03_rreq_valid           => pages_title_bus_req.rreq_valid,
-      bs03_rreq_ready           => pages_title_bus_rep.rreq_ready,
-      bs03_rreq_addr            => pages_title_bus_req.rreq_addr,
-      bs03_rreq_len             => pages_title_bus_req.rreq_len,
-      bs03_rdat_valid           => pages_title_bus_rep.rdat_valid,
-      bs03_rdat_ready           => pages_title_bus_req.rdat_ready,
-      bs03_rdat_data            => pages_title_bus_rep.rdat_data,
-      bs03_rdat_last            => pages_title_bus_rep.rdat_last
+      bs03_rreq_valid           => pages_text_bus_req(3).rreq_valid,
+      bs03_rreq_ready           => pages_text_bus_rep(3).rreq_ready,
+      bs03_rreq_addr            => pages_text_bus_req(3).rreq_addr,
+      bs03_rreq_len             => pages_text_bus_req(3).rreq_len,
+      bs03_rdat_valid           => pages_text_bus_rep(3).rdat_valid,
+      bs03_rdat_ready           => pages_text_bus_req(3).rdat_ready,
+      bs03_rdat_data            => pages_text_bus_rep(3).rdat_data,
+      bs03_rdat_last            => pages_text_bus_rep(3).rdat_last,
+
+      bs04_rreq_valid           => pages_title_bus_req.rreq_valid,
+      bs04_rreq_ready           => pages_title_bus_rep.rreq_ready,
+      bs04_rreq_addr            => pages_title_bus_req.rreq_addr,
+      bs04_rreq_len             => pages_title_bus_req.rreq_len,
+      bs04_rdat_valid           => pages_title_bus_rep.rdat_valid,
+      bs04_rdat_ready           => pages_title_bus_req.rdat_ready,
+      bs04_rdat_data            => pages_title_bus_rep.rdat_data,
+      bs04_rdat_last            => pages_title_bus_rep.rdat_last
     );
 
   write_arbiter_inst : entity work.BusWriteArbiter
@@ -575,7 +584,7 @@ begin
   -----------------------------------------------------------------------------
   pages_text_cmd_ctrl <= pages_text_cmd_valuesAddr & pages_text_cmd_offsetAddr;
 
-  text_read_gen: for i in 0 to 2 generate
+  text_read_gen: for i in 0 to 3 generate
 
     -- Article text length stream. This stream is actually unused.
     signal pages_text_valid         : std_logic;
@@ -701,7 +710,7 @@ begin
   -- Combine the three match streams into one.
   match_count_arb_inst: entity work.StreamArb
     generic map (
-      NUM_INPUTS                => 3,
+      NUM_INPUTS                => 4,
       INDEX_WIDTH               => 2,
       DATA_WIDTH                => 16
     )

@@ -21,13 +21,13 @@ entity WordMatch_CmdGen is
     mmio_done                   : out std_logic;
 
     -- Page text command/unlock streams.
-    pages_text_cmd_valid        : out std_logic_vector(2 downto 0);
-    pages_text_cmd_ready        : in  std_logic_vector(2 downto 0);
-    pages_text_cmd_idx          : out std_logic_vector(127 downto 0);
+    pages_text_cmd_valid        : out std_logic_vector(3 downto 0);
+    pages_text_cmd_ready        : in  std_logic_vector(3 downto 0);
+    pages_text_cmd_idx          : out std_logic_vector(159 downto 0);
     pages_text_cmd_valuesAddr   : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
     pages_text_cmd_offsetAddr   : out std_logic_vector(BUS_ADDR_WIDTH-1 downto 0);
-    pages_text_unl_valid        : in  std_logic_vector(2 downto 0);
-    pages_text_unl_ready        : out std_logic_vector(2 downto 0);
+    pages_text_unl_valid        : in  std_logic_vector(3 downto 0);
+    pages_text_unl_ready        : out std_logic_vector(3 downto 0);
 
     -- Match count input stream from decompression/match datapath.
     match_count_in_valid        : in  std_logic;
@@ -72,8 +72,8 @@ begin
   proc: process (clk) is
 
     -- Command stream state variables.
-    variable ptc_valid_v  : std_logic_vector(2 downto 0) := "000";
-    variable ptu_wait_v   : std_logic_vector(2 downto 0) := "000";
+    variable ptc_valid_v  : std_logic_vector(3 downto 0) := "0000";
+    variable ptu_wait_v   : std_logic_vector(3 downto 0) := "0000";
     variable rtc_valid_v  : std_logic := '0';
     variable rtu_wait_v   : std_logic := '0';
     variable rcsc_valid_v : std_logic := '0';
@@ -84,7 +84,7 @@ begin
 
     -- Match stream state variables.
     type index_array is array (natural range <>) of unsigned(19 downto 0);
-    variable mc_indices   : index_array(0 to 2) := (others => (others => '0'));
+    variable mc_indices   : index_array(0 to 3) := (others => (others => '0'));
     variable mc_remain    : unsigned(20 downto 0) := (others => '0');
     variable mci_valid    : std_logic := '0';
     variable mci_amount   : std_logic_vector(15 downto 0);
@@ -105,8 +105,8 @@ begin
       mmio_starting <= '0';
 
       -- Compute whether we're busy.
-      busy_v := ptc_valid_v(0) or ptc_valid_v(1) or ptc_valid_v(2)
-             or ptu_wait_v(0) or ptu_wait_v(1) or ptu_wait_v(2)
+      busy_v := ptc_valid_v(0) or ptc_valid_v(1) or ptc_valid_v(2) or ptc_valid_v(3)
+             or ptu_wait_v(0) or ptu_wait_v(1) or ptu_wait_v(2) or ptu_wait_v(3)
              or rtc_valid_v or rtu_wait_v or rcsc_valid_v or rcsu_wait_v
              or send_stat_v or write_busy;
 
@@ -154,16 +154,18 @@ begin
         pages_text_cmd_idx(63 downto 32)  <= std_logic_vector(resize(unsigned(mmio_cmd.f_index_data(1)), 32));
         pages_text_cmd_idx(95 downto 64)  <= std_logic_vector(resize(unsigned(mmio_cmd.f_index_data(2)), 32));
         pages_text_cmd_idx(127 downto 96) <= std_logic_vector(resize(unsigned(mmio_cmd.f_index_data(3)), 32));
+        pages_text_cmd_idx(159 downto 128)<= std_logic_vector(resize(unsigned(mmio_cmd.f_index_data(4)), 32));
         pages_text_cmd_valuesAddr <= std_logic_vector(resize(unsigned(mmio_cmd.f_text_val_addr_data), BUS_ADDR_WIDTH));
         pages_text_cmd_offsetAddr <= std_logic_vector(resize(unsigned(mmio_cmd.f_text_offs_addr_data), BUS_ADDR_WIDTH));
-        ptc_valid_v := "111";
-        ptu_wait_v := "111";
+        ptc_valid_v := "1111";
+        ptu_wait_v := "1111";
 
         -- Initialize the match stream index counters.
         mc_indices(0) := unsigned(mmio_cmd.f_index_data(0));
         mc_indices(1) := unsigned(mmio_cmd.f_index_data(1));
         mc_indices(2) := unsigned(mmio_cmd.f_index_data(2));
-        mc_remain := resize(unsigned(mmio_cmd.f_index_data(3)), 21)
+        mc_indices(3) := unsigned(mmio_cmd.f_index_data(3));
+        mc_remain := resize(unsigned(mmio_cmd.f_index_data(4)), 21)
                    - resize(unsigned(mmio_cmd.f_index_data(0)), 21)
                    - 2;
 
@@ -220,9 +222,12 @@ begin
           when "01" =>
             mco_index := std_logic_vector(mc_indices(1));
             mc_indices(1) := mc_indices(1) + 1;
-          when others =>
+          when "10" =>
             mco_index := std_logic_vector(mc_indices(2));
             mc_indices(2) := mc_indices(2) + 1;
+          when others =>
+            mco_index := std_logic_vector(mc_indices(3));
+            mc_indices(3) := mc_indices(3) + 1;
         end case;
         mco_last := mc_remain(20);
         mc_remain := mc_remain - 1;
@@ -230,8 +235,8 @@ begin
 
       -- Handle reset.
       if reset = '1' then
-        ptc_valid_v   := "000";
-        ptu_wait_v    := "000";
+        ptc_valid_v   := "0000";
+        ptu_wait_v    := "0000";
         rtc_valid_v   := '0';
         rtu_wait_v    := '0';
         rcsc_valid_v  := '0';
