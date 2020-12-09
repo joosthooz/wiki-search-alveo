@@ -328,7 +328,9 @@
               <span v-if="response.query.mode == 0">on Alveo,</span>
               <span v-else>with {{response.query.mode}} thread<span v-if="response.query.mode != 1">s,</span></span>
               making the equivalent<br/>compressed article text bandwidth approximately
-              <span class="font-weight-bold">{{response.stats.bandwidth}}</span>.
+              <span class="font-weight-bold">{{response.stats.bandwidth}}</span> ({{response.stats.input_size}} bytes), 
+              uncompressed bandwidth <span class="font-weight-bold">{{response.stats.bandwidth_uncompressed}}</span>
+              ({{response.stats.input_size_uncompressed}} bytes).
             </p>
           </v-col>
         </v-row>

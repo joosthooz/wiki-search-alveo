@@ -85,9 +85,11 @@ int main(int argc, char **argv) {
             // Print results.
             for (unsigned int i = 0; i < results->num_partial_results; i++) {
                 auto p = results->partial_results[i];
-                printf("kernel %u took %u cycles at %.0f MHz for %llu bytes = %.3f GB/s\n",
+                printf("kernel %u took %u cycles at %.0f MHz for %llu bytes = %.3f GB/s (%llu bytes = %.3f GB/s uncompressed)\n",
                     i, p->cycle_count, p->clock_frequency, p->data_size,
-                    (p->data_size / (p->cycle_count / (p->clock_frequency * 1000000.0f))) / (1024.0f * 1024.0f * 1024.0f));
+                    (p->data_size / (p->cycle_count / (p->clock_frequency * 1000000.0f))) / (1024.0f * 1024.0f * 1024.0f),
+                     p->data_size_uncompressed,
+                    (p->data_size_uncompressed / (p->cycle_count / (p->clock_frequency * 1000000.0f))) / (1024.0f * 1024.0f * 1024.0f));
             }
             printf("\n%u pages matched & %u total matches within %.6fs on hardware\n",
                 results->num_page_matches, results->num_word_matches,

@@ -87,6 +87,7 @@ typedef struct {
     // sum of the number of bytes in the article text values and offset
     // buffers).
     unsigned long long data_size;
+    unsigned long long data_size_uncompressed;
 
     // Total amount of time taken (including overhead in starting the kernel
     // and transferring results back) in microseconds.

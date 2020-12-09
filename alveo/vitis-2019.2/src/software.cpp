@@ -66,6 +66,7 @@ void SoftwareWordMatch::execute(const WordMatchConfig &config,
         presults.cycle_count = 0;
         presults.clock_frequency = 0;
         presults.data_size = 0;
+        presults.data_size_uncompressed = 0;
         presults.time_taken = 0;
     }
 
@@ -259,6 +260,7 @@ void SoftwareWordMatch::execute(const WordMatchConfig &config,
                         }
                     }
                 }
+                presults.data_size_uncompressed += uncompressed_length + 4;
 
                 presults.num_word_matches += num_matches;
                 if (num_matches >= config.min_matches) {

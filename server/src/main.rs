@@ -40,8 +40,10 @@ struct QueryStats {
     num_page_matches: u32,
     num_result_records: u32,
     input_size: u64,
+    input_size_uncompressed: u64,
     time_taken_ms: u32,
     bandwidth: String,
+    bandwidth_uncompressed: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -145,6 +147,7 @@ fn go_query(query: QueryParameters) -> Result<impl warp::Reply, warp::Rejection>
 
         // Approximate number of compressed bytes processed in total.
         let mut input_size = 0u64;
+        let mut input_size_uncompressed = 0u64;
 
         let mut results = HashMap::new();
         for partial in
@@ -187,6 +190,7 @@ fn go_query(query: QueryParameters) -> Result<impl warp::Reply, warp::Rejection>
 
             // Accumulate input size.
             input_size += partial.data_size as u64;
+            input_size_uncompressed += partial.data_size_uncompressed as u64;
         }
 
         // Sort the results.
@@ -219,10 +223,15 @@ fn go_query(query: QueryParameters) -> Result<impl warp::Reply, warp::Rejection>
                 num_page_matches: result.num_page_matches,
                 num_result_records,
                 input_size,
+                input_size_uncompressed,
                 time_taken_ms: result.time_taken / 1000,
                 bandwidth: format!(
                     "{:.2} GB/s",
                     ((input_size as f32) / (result.time_taken as f32)) / 1000f32
+                ),
+                bandwidth_uncompressed: format!(
+                    "{:.2} GB/s",
+                    ((input_size_uncompressed as f32) / (result.time_taken as f32)) / 1000f32
                 ),
             },
             top_result,

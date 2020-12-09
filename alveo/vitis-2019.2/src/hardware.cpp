@@ -263,6 +263,7 @@ void HardwareWordMatchKernel::execute_chunk(unsigned int chunk, WordMatchPartial
     auto start = std::chrono::high_resolution_clock::now();
     results.data_size = (unsigned long long)chunks[chunk].text_offset->get_size()
                       + (unsigned long long)chunks[chunk].text_values->get_size();
+    results.data_size_uncompressed = 0; //Don't know, in hardware
     results.clock_frequency = clock0;
     enqueue_for_chunk(chunk)->wait();
     get_results(results);
